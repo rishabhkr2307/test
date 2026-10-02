@@ -1,3 +1,4 @@
+DROP TABLE canvas, workspace, users, rooms; 
 create table users (
      username varchar(50) primary key,
      user_password varchar(100) not null
@@ -11,18 +12,18 @@ CREATE table rooms(
      );
 
 CREATE TABLE workspace(
-    username varchar(50) references users(username),
-    room_id char(6) references rooms(room_id),
+    username varchar(50) references users(username) on delete cascade,
+    room_id char(6) references rooms(room_id) on delete cascade,
     is_owner boolean default false,
     primary key(username, room_id)
 );
 
 CREATE table canvas(
     element_id VARCHAR(50) primary key,
-    element_type varhcar(50) not null,
-    properties jasonb,
-    room_id varchar(6) references rooms(room_id),
-    created_by varchar(50) references users(username),
-    modified_by varchar(50) references users(username)
+    element_type varchar(50) not null,
+    properties jsonb,
+    room_id varchar(6) references rooms(room_id) on delete cascade,
+    created_by varchar(50) references users(username) on delete cascade,
+    modified_by varchar(50) references users(username) on delete cascade
 
 );
