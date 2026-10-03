@@ -4,6 +4,7 @@ const bcrypt=require('bcryptjs');
 const cookieparser=require('cookie-parser')
 const jwt=require('jsonwebtoken')
 const db=require('./db')
+const crypto=require('crypto')
 
 const app=express();
 
@@ -15,7 +16,7 @@ app.post('/register',async(req,res)=>{
     const{username , password}=req.body;
 
     if(!username || !password){
-        return res.status.json({error: "either username or password not set"});
+        return res.status(400).json({error: "either username or password not set"});
     }
 
     try{
@@ -59,8 +60,24 @@ app.post('/login', async(req,res)=>{
         console.log(err.message);
         res.status(500).json({error: 'server error', details: err.message});
     }
-
 });
+
+app.post('/create-room',async(req,res)=>{
+    const {rpass}=req.body;
+    const username=req.users.username;
+    
+    const roomid=crypto.randomBytes(8).toString('hex');
+    const link=crypto.randomBytes(16).toString('hex');
+    const ReadOnly=crypto.randomBytes(16).toString('hex');
+
+    let rpassh=null;
+    if(rpass)
+    {
+        rpassh=await bcrypt.hash(rpass,10);
+    }
+
+    
+})
 
 
 const port=3000;
