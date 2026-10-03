@@ -1,4 +1,4 @@
-DROP TABLE canvas, workspace, users, rooms; 
+
 create table users (
      username varchar(50) primary key,
      user_password varchar(100) not null
@@ -27,3 +27,4 @@ CREATE table canvas(
     modified_by varchar(50) references users(username) on delete cascade
 
 );
+
