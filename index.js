@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express= require('express');
 const bcrypt=require('bcryptjs');
-const cookieparser=require('cookie-parser')
+const cookieParser=require('cookie-parser')
 const jwt=require('jsonwebtoken')
 const db=require('./db')
 const crypto=require('crypto')
@@ -13,9 +13,12 @@ app.get('/', (req,res)=>{
     res.sendFile(path.join(__dirname,"index.html"));
 });
 
+app.get('/login',(req,res)=>{
+    res.sendFile(path.join(__dirname,"login.html"))
+})
 
 app.use(express.json());
-app.use(cookieparser());
+app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
 
 app.post('/register',async(req,res)=>{
@@ -69,7 +72,7 @@ app.post('/login', async(req,res)=>{
 });
 
 const authtoken=(req,res,next)=>{
-    const token=req.cookie.token;
+    const token=req.cookies.token;
     if(!token){
         return res.status(401).json({error:"Access Denied"});
     }
@@ -80,13 +83,13 @@ const authtoken=(req,res,next)=>{
     }
     catch(err)
     {
-        return req.status(403).json({error: "Invalid token"});
+        return res.status(403).json({error: "Invalid token"});
     }
 }
 
 app.post('/create-room',authtoken, async(req,res)=>{
     const {rpass}=req.body;
-    const username=req.users.username;
+    const username=req.user.username;
     
     const roomid=crypto.randomBytes(8).toString('hex');
     const link=crypto.randomBytes(16).toString('hex');
@@ -103,25 +106,23 @@ app.post('/create-room',authtoken, async(req,res)=>{
         await client.query('BEGIN');
 
         const RoomQUery = `INSERT INTO rooms (room_id, room_password, invite_link, read_link)
-        values($1,$2,$3, $4);`;
+        values($1,$2,$3,$4);`;
 
-        await client.query(RoomQuery,[roomid,passh,link,ReadOnly])
-
-        await client.query('COMMIT');
-
+        await client.query(roomQuery,[roomid,rpassh,link,ReadOnly])
         
         const spaceQuery=`insert into workspace (username, room_id, is_owner)
         values($1,$2,true);`;
         
         await client.query(spaceQuery,[username,roomid]);
 
+        await client.query('COMMIT');
         res.status(201).json({
             message:"Room created", roomid, inviteLink, ReadOnly
         });   
     }
     catch(err){
         await client.query('ROLLBACK')
-        res.status(500).json({error:"failed to create room"});
+        res.status(500).json({error:"failed to create room", err});
     }
     finally{
         client.release();

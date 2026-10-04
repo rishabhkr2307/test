@@ -25,6 +25,5 @@ CREATE table canvas(
     room_id varchar(6) references rooms(room_id) on delete cascade,
     created_by varchar(50) references users(username) on delete cascade,
     modified_by varchar(50) references users(username) on delete cascade
-
 );
 
