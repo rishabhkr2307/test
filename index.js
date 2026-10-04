@@ -68,7 +68,23 @@ app.post('/login', async(req,res)=>{
     }
 });
 
-app.post('/create-room',async(req,res)=>{
+const authtoken=(req,res,next)=>{
+    const token=req.cookie.token;
+    if(!token){
+        return res.status(401).json({error:"Access Denied"});
+    }
+    try{
+    const verified=jwt.verify(token, process.env.JWT_SECRET);
+    req.user=verified;
+    next();
+    }
+    catch(err)
+    {
+        return req.status(403).json({error: "Invalid token"});
+    }
+}
+
+app.post('/create-room',authtoken, async(req,res)=>{
     const {rpass}=req.body;
     const username=req.users.username;
     
