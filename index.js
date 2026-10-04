@@ -88,6 +88,7 @@ const authtoken=(req,res,next)=>{
 }
 
 app.post('/create-room',authtoken, async(req,res)=>{
+    
     const {rpass}=req.body;
     const username=req.user.username;
     
@@ -105,33 +106,31 @@ app.post('/create-room',authtoken, async(req,res)=>{
     try{
         await client.query('BEGIN');
 
-        const RoomQUery = `INSERT INTO rooms (room_id, room_password, invite_link, read_link)
+        const roomQuery = `INSERT INTO rooms (room_id, room_password, invite_link, read_link)
         values($1,$2,$3,$4);`;
 
         await client.query(roomQuery,[roomid,rpassh,link,ReadOnly])
         
-        const spaceQuery=`insert into workspace (username, room_id, is_owner)
+        const spaceQuery=`INSERT INTO workspace (username, room_id, is_owner)
         values($1,$2,true);`;
         
         await client.query(spaceQuery,[username,roomid]);
 
         await client.query('COMMIT');
         res.status(201).json({
-            message:"Room created", roomid, inviteLink, ReadOnly
+            message:"Room created", roomid, inviteLink:link, ReadOnly
         });   
     }
     catch(err){
         await client.query('ROLLBACK')
-        res.status(500).json({error:"failed to create room", err});
+        res.status(500).json({error:"failed to create room"});
     }
     finally{
         client.release();
     }
 });
 
-
 const port=3000;
 app.listen(port, ()=>{
     console.log(`Server is running at http://localhost:${port}`)
-
 });
