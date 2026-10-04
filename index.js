@@ -5,8 +5,14 @@ const cookieparser=require('cookie-parser')
 const jwt=require('jsonwebtoken')
 const db=require('./db')
 const crypto=require('crypto')
+const path=require('path')
 
 const app=express();
+
+app.get('/', (req,res)=>{
+    res.sendFile(path.join(__dirname,"index.html"));
+});
+
 
 app.use(express.json());
 app.use(cookieparser());
