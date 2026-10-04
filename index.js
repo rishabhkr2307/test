@@ -44,17 +44,17 @@ app.post('/login', async(req,res)=>{
 
         if(result.rows.length ===0)
         {
-            return res.json(({error: "invalid credentials"}));
+            return res.status(401).json(({error: "invalid credentials"}));
         }
         const user=result.rows[0];
         const isvalid=await bcrypt.compare(password, user.user_password);
         if(!isvalid){
-            res.json({error: "wrong password"});
+            res.status(401).json({error: "wrong password"});
         }
         const token=jwt.sign({username: user.username},process.env.JWT_SECRET)
         res.cookie('token',token);
 
-        res.json({message: "Login success", username: user.username});
+        res.status(200).json({message: "Login success", username: user.username});
     }
    catch(err){
         console.log(err.message);
@@ -75,9 +75,36 @@ app.post('/create-room',async(req,res)=>{
     {
         rpassh=await bcrypt.hash(rpass,10);
     }
+    const client = await db.pool.connect();
 
-    
-})
+    try{
+        await client.query('BEGIN');
+
+        const RoomQUery = `INSERT INTO rooms (room_id, room_password, invite_link, read_link)
+        values($1,$2,$3, $4);`;
+
+        await client.query(RoomQuery,[roomid,passh,link,ReadOnly])
+
+        await client.query('COMMIT');
+
+        
+        const spaceQuery=`insert into workspace (username, room_id, is_owner)
+        values($1,$2,true);`;
+        
+        await client.query(spaceQuery,[username,roomid]);
+
+        res.status(201).json({
+            message:"Room created", roomid, inviteLink, ReadOnly
+        });   
+    }
+    catch(err){
+        await client.query('ROLLBACK')
+        res.status(500).json({error:"failed to create room"});
+    }
+    finally{
+        client.release();
+    }
+});
 
 
 const port=3000;
