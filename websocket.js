@@ -35,25 +35,7 @@ function setupwebsocket(server){
             rooms.set(roomId, new set());
         rooms.get(roomId).add(ws);
 
-        ws.on('message',(data)=>{
-            const roomc=roomId.get(roomId);
-            if(!roomc) return;
-
-            roomc.array.forEach(client => {
-                if(client!==ws && client.readyStare===1){
-                    client.send(data);
-                }
-            });
-        });
-        ws.on('close',()=>{
-            const roomc = rooms.get(roomId);
-            if(roomc){
-                roomc.delete(ws);
-                if(roomc.size===0)
-                    rooms.delete(roomId)
-            }
-        });
-
+       
     });
     
 };
