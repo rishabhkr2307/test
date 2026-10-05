@@ -6,6 +6,8 @@ const jwt=require('jsonwebtoken')
 const db=require('./db')
 const crypto=require('crypto')
 const path=require('path')
+const http=require('http')
+const setupwebsocket=require('./websocket')
 
 const app=express();
 
@@ -130,7 +132,11 @@ app.post('/create-room',authtoken, async(req,res)=>{
     }
 });
 
-const port=3000;
+const server=http.createServer(app);
+
+setupwebsocket(server);
+
+const port=process.env.PORT;
 app.listen(port, ()=>{
     console.log(`Server is running at http://localhost:${port}`)
 });

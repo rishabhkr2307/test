@@ -1,4 +1,4 @@
-const ws=require('ws');
+const WebSocket=require('ws');
 const jwt=require('jsonwebtoken');
 
 function setupwebsocket(server){
