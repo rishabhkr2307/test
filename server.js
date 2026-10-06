@@ -7,21 +7,26 @@ const db=require('./db')
 const crypto=require('crypto')
 const path=require('path')
 const http=require('http')
-const setupwebsocket=require('./websocket')
+const setupWebSocket=require('./websocket')
 
 const app=express();
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({extended: true}));
 
 app.get('/', (req,res)=>{
     res.sendFile(path.join(__dirname,"index.html"));
 });
 
+app.get('/register', (req,res)=>{
+    res.sendFile(path.join(__dirname,"register.html"));
+});
+
+
 app.get('/login',(req,res)=>{
     res.sendFile(path.join(__dirname,"login.html"))
 })
 
-app.use(express.json());
-app.use(cookieParser());
-app.use(express.urlencoded({extended: true}));
 
 app.post('/register',async(req,res)=>{
     const{username , password}=req.body;
@@ -90,8 +95,9 @@ const authtoken=(req,res,next)=>{
 }
 
 app.post('/create-room',authtoken, async(req,res)=>{
-    
-    const {rpass}=req.body;
+    console.log(req.body)
+    const rpass=req.body.roomPassword;
+    console.log(rpass)
     const username=req.user.username;
     
     const roomid=crypto.randomBytes(8).toString('hex');
@@ -134,9 +140,10 @@ app.post('/create-room',authtoken, async(req,res)=>{
 
 const server=http.createServer(app);
 
-setupwebsocket(server);
+setupWebSocket(server);
 
-const port=process.env.PORT;
+const port=process.env.PORT || 8080;
 app.listen(port, ()=>{
     console.log(`Server is running at http://localhost:${port}`)
 });
+

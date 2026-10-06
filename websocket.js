@@ -1,7 +1,7 @@
 const WebSocket=require('ws');
 const jwt=require('jsonwebtoken');
 
-function setupwebsocket(server){
+function setupWebSocket(server){
     const wss=new WebSocket.Server({noServer: true});
 
     const rooms= new Map();
@@ -58,4 +58,4 @@ function setupwebsocket(server){
     
 };
 
-module.export=setupwebsocket;
+module.exports=setupWebSocket;
