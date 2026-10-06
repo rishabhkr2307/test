@@ -18,7 +18,7 @@ function setupWebSocket(server){
         try{
             const decode=jwt.verify(token, process.env.JWT_SECRET);
 
-            wss.handleupgrade(request, socket, head, (ws)=>{
+            wss.handleUpgrade(request, socket, head, (ws)=>{
                 ws.user=decode;
                 ws.roomId=roomid;
                 ws.emit('Connect',ws,request);
@@ -32,19 +32,42 @@ function setupWebSocket(server){
     wss.on('connection', (ws)=>{
         const {roomId,user}=ws;
         if(!rooms.has(roomId))
-            rooms.set(roomId, new set());
+            rooms.set(roomId, new Set());
         rooms.get(roomId).add(ws);
 
-        ws.on('message',(data)=>{
-            const roomc=roomId.get(roomId);
+        ws.on('message',(rawMsg)=>{
+           try{
+            const roomc=rooms.get(roomId);
+            const data=JSON.parse(rawMsg.toString());
             if(!roomc) return;
+            switch(data.type)
+            {
+                case 'cursor':
+                    toRoom(ws,roomc,data)
+                    break;
+                case 'element':
+                    toRoom(ws.roomc,data)
+                    break;
+                case 'elementLock':
+                    toRoom(ws,roomc,data)
+                    break;
+                default:
+                    console.warn(`wrong type ${data.type}`)
+            }
+        }
+        catch(err){
+            console.error("Invalid",err.message)
+        }
+        });
 
-            roomc.array.forEach(client => {
-                if(client!==ws && client.readyStare===1){
-                    client.send(data);
+        function toRoom(senderWs,roomc,payload){
+            roomc.forEach(client => {
+                if(client!==senderWs && client.readyState===1){
+                    client.send(JSON.stringify(payload));
                 }
             });
-        });
+        }
+
         ws.on('close',()=>{
             const roomc = rooms.get(roomId);
             if(roomc){
@@ -55,6 +78,7 @@ function setupWebSocket(server){
         });
 
     });
+    
     
 };
 
