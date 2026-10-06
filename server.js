@@ -67,10 +67,11 @@ app.post('/login', async(req,res)=>{
         if(!isvalid){
             res.status(401).json({error: "wrong password"});
         }
-        const token=jwt.sign({username: user.username},process.env.JWT_SECRET)
+        const token=jwt.sign({username: user.username},process.env.JWT_SECRET,{expiresIn: '24h'});
+       
         res.cookie('token',token);
 
-        res.status(200).json({message: "Login success", username: user.username});
+        res.status(200).json({token, message: "Login success", username: user.username,});
     }
    catch(err){
         console.log(err.message);
@@ -143,7 +144,7 @@ const server=http.createServer(app);
 setupWebSocket(server);
 
 const port=process.env.PORT || 8080;
-app.listen(port, ()=>{
+server.listen(port, ()=>{
     console.log(`Server is running at http://localhost:${port}`)
 });
 

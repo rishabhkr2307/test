@@ -6,10 +6,12 @@ function setupWebSocket(server){
 
     const rooms= new Map();
     server.on('upgrade',(request, socket,head)=>{
+        console.log("attempting connection")
         const url= new URL(request.url, `http://${request.headers.host}`);
         const token=url.searchParams.get('token')
         const roomid=url.searchParams.get('roomid)')
         if(!token || !roomid){
+            console.log("rejected")
             socket.write('Unauthorized')
             socket.destroy();
             return;
@@ -17,7 +19,7 @@ function setupWebSocket(server){
 
         try{
             const decode=jwt.verify(token, process.env.JWT_SECRET);
-
+            console.log(`jwt verified user:${decode.username} | room:${roomid}`)
             wss.handleUpgrade(request, socket, head, (ws)=>{
                 ws.user=decode;
                 ws.roomId=roomid;
@@ -25,6 +27,8 @@ function setupWebSocket(server){
             });
         }
         catch(err){
+            console.log("Rejected")
+            console.log("hello",err.message)
             socket.write('Unauthorized');
             socket.destroy();
         }
