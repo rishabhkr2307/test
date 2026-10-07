@@ -9,7 +9,7 @@ export default function Workspace(){
         <div style={{position: 'absolute', top: 10, left:10, color:'black'}}></div>
         <h3>Room: {roomId} || 'Local Test'</h3>
 
-        <canvas/>
+        <Canvas/>
         </div>
 
     )

@@ -6,7 +6,7 @@ function App(){
     <BrowserRouter>
     <Routes>
       <Route path="/" element={<Navigate to='/workspace/test-rom-123'/>}/>
-      <Route path="/workspace/:roomId" element={<workspace/>}/>
+      <Route path="/workspace/:roomId" element={<Workspace/>}/>
     </Routes>
     </BrowserRouter>
   )
