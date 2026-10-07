@@ -7,11 +7,9 @@ function setupWebSocket(server){
     const rooms= new Map();
     server.on('upgrade',(request, socket,head)=>{
         console.log("attempting connection")
-        console.log(`raw url= ${request.url}`)
         const url= new URL(request.url, `http://${request.headers.host}`);
         const token=url.searchParams.get('token')
-        const roomid=url.searchParams.get('roomid') || url.searchParams.get('roomId')
-        console.log(roomid)
+        const roomid=url.searchParams.get('roomid)')
         if(!token || !roomid){
             console.log("rejected")
             socket.write('Unauthorized')
@@ -25,29 +23,25 @@ function setupWebSocket(server){
             wss.handleUpgrade(request, socket, head, (ws)=>{
                 ws.user=decode;
                 ws.roomId=roomid;
-                wss.emit('connection',ws,request);
+                ws.emit('Connect',ws,request);
             });
         }
         catch(err){
-            console.log("hello",err.message)
             console.log("Rejected")
+            console.log("hello",err.message)
             socket.write('Unauthorized');
             socket.destroy();
         }
     });
     wss.on('connection', (ws)=>{
-        console.log(`User ${ws.user.username} fully connected to room ${ws.roomId}!`);
-        
-        const {roomId, user} = ws;
+        const {roomId,user}=ws;
         if(!rooms.has(roomId))
             rooms.set(roomId, new Set());
         rooms.get(roomId).add(ws);
 
-        ws.on('message', (rawMsg) => {
-            console.log(`eceived from ${ws.user.username}:`, rawMsg.toString());
+        ws.on('message',(rawMsg)=>{
            try{
             const roomc=rooms.get(roomId);
-            console.log(`recieved from ${ws.user.username}`, rawMsg.toString())
             const data=JSON.parse(rawMsg.toString());
             if(!roomc) return;
             switch(data.type)
@@ -56,7 +50,7 @@ function setupWebSocket(server){
                     toRoom(ws,roomc,data)
                     break;
                 case 'element':
-                    toRoom(ws,roomc,data)
+                    toRoom(ws.roomc,data)
                     break;
                 case 'elementLock':
                     toRoom(ws,roomc,data)
