@@ -6,7 +6,7 @@ export default function Workspace(){
     const {roomId}=useParams();
     return(
         <div style={{position: 'relative'}}>
-        <div style={{position: 'absolute', top: 10, left:10, color:'white'}}></div>
+        <div style={{position: 'absolute', top: 10, left:10, color:'black'}}></div>
         <h3>Room: {roomId} || 'Local Test'</h3>
 
         <canvas/>
