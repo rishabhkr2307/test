@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="text" id='url' value="ws://localhost:8080?roomid=room1&token=PASTE_YOUR_TOKEN_HERE" style=width:500px>
+    <button onclick='connect()'>connect</button>
+    <br><br>
+
+    <button onclick="sendCursor()">Cursor move</button>
+    <button onclick="sendElement()">element move</button>
+    <pre id="log"></pre>
+    <script>
+        let ws;
+        const log=document.getElementById('log')
+
+        function connect(){
+            ws=new WebSocket(document.getElementById('url').value)
+            ws.onopen=()=> log.innerHTML+='connected\n'
+            ws.onmessage=(msg)=> log.innerHTML+=`recieved ${msg.data}`
+        }
+
+        function sendCursor(){
+            const pl={type:'cursor', x: Math.random()*500, y: Math.random()*500}
+            ws.send(JSON.stringify(pl));
+            log.innerHTML+=`sent cursor data`;
+        }
+
+        function sendElement(){
+            const pl={type:'element', action:"draw_line", x1:0, y1:0, x2:100, y2:100};
+            ws.send(JSON.stringify(pl));
+            log.innerHTML+=`sent Element data`;
+        }
+    </script>
+</body>
+</html>
