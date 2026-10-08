@@ -8,10 +8,11 @@ function setupWebSocket(server){
     const rooms= new Map();
     server.on('upgrade',(request, socket,head)=>{
         console.log("attempting connection")
-        const purl=url.parse(request.url, true)
-        console.log(request.ur)
-        const token=purl.query.token;
-        const roomid=purl.query.roomId;
+        const burl=`http://${request.headers.host}`
+        const purl=new URL(request.url, burl);
+        console.log(request.url)
+        const token=purl.searchParams.get('token')
+        const roomid=purl.searchParams.get('roomId')
         if(!token || !roomid){
             console.log("rejected")
             socket.write('Unauthorized')
