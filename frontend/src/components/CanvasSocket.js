@@ -13,12 +13,13 @@ export function CanvasSocket(roomId, token){
         ws.current= new WebSocket(socketUrl);
 
         ws.current.onopen=()=> console.log(`room: ${roomId}`)
-        ws.current.onerror=()=>console.log('Error',error);
+        ws.current.onerror=(error)=>console.log('Error',error);
         ws.current.onclose=()=>console.log('Closed')
 
         ws.current.onmessage= (e)=>{
             const data=JSON.parse(e.data);
             console.log("REcieved");
+            if(onmessage) onmessage(data)
         };
 
         return()=>{

@@ -24,9 +24,10 @@ function setupWebSocket(server){
             const decode=jwt.verify(token, process.env.JWT_SECRET);
             console.log(`jwt verified user:${decode.username} | room:${roomid}`)
             wss.handleUpgrade(request, socket, head, (ws)=>{
+                console.log("handshake")
                 ws.user=decode;
                 ws.roomId=roomid;
-                ws.emit('Connect',ws,request);
+                wss.emit('connection',ws,request);
             });
         }
         catch(err){
@@ -37,6 +38,7 @@ function setupWebSocket(server){
         }
     });
     wss.on('connection', (ws)=>{
+        console.log("joined the room", ws.roomId);
         const {roomId,user}=ws;
         if(!rooms.has(roomId))
             rooms.set(roomId, new Set());
@@ -53,7 +55,7 @@ function setupWebSocket(server){
                     toRoom(ws,roomc,data)
                     break;
                 case 'element':
-                    toRoom(ws.roomc,data)
+                    toRoom(ws,roomc,data)
                     break;
                 case 'elementLock':
                     toRoom(ws,roomc,data)

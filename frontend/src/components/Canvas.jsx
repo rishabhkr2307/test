@@ -1,9 +1,24 @@
 import React, { useRef, useEffect } from 'react';
+import { CanvasSocket } from './CanvasSocket';
 
-export default function Canvas({sendMsg}) {
+export default function Canvas({roomId, token}) {
     const cref = useRef(null);
     const isdraw = useRef(false);
 
+    const handle=(data)=>{
+        if(data.type !=='element') return;
+
+        const ctx=cref.current.getContext('2d');
+        if(data.action ==='start'){
+            ctx.beginPath();
+            ctx.moveTo(data.x, data.y)
+        }
+        else if(data.action === 'draw'){
+            ctx.lineTo(data.x, data.y);
+            ctx.stroke();
+        }
+    }
+    const {sendMsg} = CanvasSocket(roomId, token, handle)
     useEffect(() => {
         const canvas = cref.current;
         canvas.width = window.innerWidth;
