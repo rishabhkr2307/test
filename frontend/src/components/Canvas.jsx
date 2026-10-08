@@ -6,6 +6,7 @@ export default function Canvas({roomId, token}) {
     const isdraw = useRef(false);
 
     const handle=(data)=>{
+        console.log("Drawing", data);
         if(data.type !=='element') return;
 
         const ctx=cref.current.getContext('2d');
@@ -38,7 +39,7 @@ export default function Canvas({roomId, token}) {
         isdraw.current = true;
 
         if(sendMsg){
-            sendMsg({type: 'element', acion: 'start', x:offsetX, y:offsetY})
+            sendMsg({type: 'element', action: 'start', x:offsetX, y:offsetY})
         }
     };
 
@@ -51,7 +52,7 @@ export default function Canvas({roomId, token}) {
         ctx.stroke();
 
         if(sendMsg){
-            sendMsg({type: 'element', acion: 'start', x:offsetX, y:offsetY})
+            sendMsg({type: 'element', action: 'draw', x:offsetX, y:offsetY})
         }
     };
 

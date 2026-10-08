@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-export function CanvasSocket(roomId, token){
+export function CanvasSocket(roomId, token, onMessage){
     const ws=useRef(null);
     
     useEffect(()=>{
@@ -17,9 +17,16 @@ export function CanvasSocket(roomId, token){
         ws.current.onclose=()=>console.log('Closed')
 
         ws.current.onmessage= (e)=>{
+            console.log("REcieved", e.data);
+            try{
             const data=JSON.parse(e.data);
-            console.log("REcieved");
-            if(onmessage) onmessage(data)
+            if(onMessage) {
+                onMessage(data)
+               }
+        }
+            catch(err){
+                console.log("Failed parsing", err);
+            }
         };
 
         return()=>{
