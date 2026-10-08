@@ -1,5 +1,6 @@
 const WebSocket=require('ws');
 const jwt=require('jsonwebtoken');
+const url=require('url')
 
 function setupWebSocket(server){
     const wss=new WebSocket.Server({noServer: true});
@@ -7,9 +8,10 @@ function setupWebSocket(server){
     const rooms= new Map();
     server.on('upgrade',(request, socket,head)=>{
         console.log("attempting connection")
-        const url= new URL(request.url, `http://${request.headers.host}`);
-        const token=url.searchParams.get('token')
-        const roomid=url.searchParams.get('roomid)')
+        const purl=url.parse(request.url, true)
+        console.log(request.ur)
+        const token=purl.query.token;
+        const roomid=purl.query.roomId;
         if(!token || !roomid){
             console.log("rejected")
             socket.write('Unauthorized')
