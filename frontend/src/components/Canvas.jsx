@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 
-export default function Canvas() {
+export default function Canvas({sendMsg}) {
     const cref = useRef(null);
     const isdraw = useRef(false);
 
@@ -21,6 +21,10 @@ export default function Canvas() {
         ctx.beginPath();
         ctx.moveTo(offsetX, offsetY);
         isdraw.current = true;
+
+        if(sendMsg){
+            sendMsg({type: 'element', acion: 'start', x:offsetX, y:offsetY})
+        }
     };
 
     const draw = (e) => {
@@ -30,6 +34,10 @@ export default function Canvas() {
 
         ctx.lineTo(offsetX, offsetY);
         ctx.stroke();
+
+        if(sendMsg){
+            sendMsg({type: 'element', acion: 'start', x:offsetX, y:offsetY})
+        }
     };
 
     const stopDraw = () => {
