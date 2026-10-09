@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { CanvasSocket } from './CanvasSocket';
+import {excalidraw} from '@excalidraw/excalidraw'
 
 export default function Canvas({roomId}) {
     const cref = useRef(null);
