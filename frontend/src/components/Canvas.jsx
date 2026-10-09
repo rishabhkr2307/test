@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { CanvasSocket } from './CanvasSocket';
 
-export default function Canvas({roomId, token}) {
+export default function Canvas({roomId}) {
     const cref = useRef(null);
     const isdraw = useRef(false);
 
@@ -19,7 +19,7 @@ export default function Canvas({roomId, token}) {
             ctx.stroke();
         }
     }
-    const {sendMsg} = CanvasSocket(roomId, token, handle)
+    const {sendMsg} = CanvasSocket(roomId, handle)
     useEffect(() => {
         const canvas = cref.current;
         canvas.width = window.innerWidth;
