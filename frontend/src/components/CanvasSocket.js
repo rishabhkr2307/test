@@ -1,15 +1,15 @@
 import { useEffect, useRef } from "react";
 
-export function CanvasSocket(roomId, token, onMessage){
+export function CanvasSocket(roomId, onMessage){
     const ws=useRef(null);
     
     useEffect(()=>{
-        if(!roomId || !token){
+        if(!roomId){
             console.log("missing");
             return;
         }
         console.log("connecting")
-        const socketUrl=`ws://localhost:8080?roomId=${roomId}&token=${token}`;
+        const socketUrl=`ws://localhost:8080?roomId=${roomId}`;
         ws.current= new WebSocket(socketUrl);
 
         ws.current.onopen=()=> console.log(`room: ${roomId}`)
@@ -32,7 +32,7 @@ export function CanvasSocket(roomId, token, onMessage){
         return()=>{
             if(ws.current) ws.current.close();
         };
-    },[roomId, token])
+    },[roomId])
 
     const sendMsg=(p)=>{
         if(ws.current && ws.current.readyState ===WebSocket.OPEN){
