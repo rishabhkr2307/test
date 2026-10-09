@@ -8,10 +8,12 @@ function setupWebSocket(server){
     const rooms= new Map();
     server.on('upgrade',(request, socket,head)=>{
         console.log("attempting connection")
+        const cookieH=request.headers.cookie || '';
+        const match = cookieH.match(/token=([^;]+)/)
+        const token=match? match[1] : null;
         const burl=`http://${request.headers.host}`
         const purl=new URL(request.url, burl);
         console.log(request.url)
-        const token=purl.searchParams.get('token')
         const roomid=purl.searchParams.get('roomId')
         if(!token || !roomid){
             console.log("rejected")
