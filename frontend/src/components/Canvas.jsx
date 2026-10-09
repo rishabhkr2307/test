@@ -1,79 +1,41 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { CanvasSocket } from './CanvasSocket';
-import {excalidraw} from '@excalidraw/excalidraw'
+import {Excalidraw} from '@excalidraw/excalidraw'
 
 export default function Canvas({roomId}) {
-    const cref = useRef(null);
-    const isdraw = useRef(false);
-
+    const {exdrApi, setExdrApi}=useState(null)
     const handle=(data)=>{
-        console.log("Drawing", data);
-        if(data.type !=='element') return;
-
-        const ctx=cref.current.getContext('2d');
-        if(data.action ==='start'){
-            ctx.beginPath();
-            ctx.moveTo(data.x, data.y)
-        }
-        else if(data.action === 'draw'){
-            ctx.lineTo(data.x, data.y);
-            ctx.stroke();
-        }
+        if(!exdrApi) return;
+        console.log("recieved: ",data)
     }
-    const {sendMsg} = CanvasSocket(roomId, handle)
-    useEffect(() => {
-        const canvas = cref.current;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
 
-        const ctx = canvas.getContext('2d');
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineCap = 'round';
-    }, []);
-
-    const startDraw = (e) => {
-        const { offsetX, offsetY } = e.nativeEvent;
-        const ctx = cref.current.getContext('2d');
-        ctx.beginPath();
-        ctx.moveTo(offsetX, offsetY);
-        isdraw.current = true;
-
+    const {sendMsg}=CanvasSocket(roomId, handle);
+    const handlech=(elements, appState)=>{
         if(sendMsg){
-            sendMsg({type: 'element', action: 'start', x:offsetX, y:offsetY})
+            sendMsg({
+                type: 'element',
+                payload: elements
+            })
         }
     };
 
-    const draw = (e) => {
-        if (!isdraw.current) return;
-        const { offsetX, offsetY } = e.nativeEvent;
-        const ctx = cref.current.getContext('2d'); 
-
-        ctx.lineTo(offsetX, offsetY);
-        ctx.stroke();
-
+    const handlepu=(payload)=>{
         if(sendMsg){
-            sendMsg({type: 'element', action: 'draw', x:offsetX, y:offsetY})
+            sendMsg({
+                type: 'cursor',
+                pointer:{x:payload.pointer.x, y:payload.pointer.y}
+            })
         }
-    };
-
-    const stopDraw = () => {
-        if (!isdraw.current) return;
-        const ctx = cref.current.getContext('2d');
-        ctx.closePath();
-        isdraw.current = false;
     };
 
     return (
         <div style={{ backgroundColor: '#1e1e1e', width: '100vw', height: '100vh', overflow: 'hidden' }}>
-            <canvas
-                ref={cref}
-                onMouseDown={startDraw}
-                onMouseMove={draw}
-                onMouseUp={stopDraw}
-                onMouseOut={stopDraw}
-                style={{ cursor: 'crosshair' }}
-            />
+           <Excalidraw
+           exdrApi={(api)=>setExdrApi(api)}
+           onChange={handlech}
+           onPointerUpdate={handlepu}
+           theme='dark'
+           />
         </div>
     );
 }
