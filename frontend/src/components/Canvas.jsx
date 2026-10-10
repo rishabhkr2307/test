@@ -17,10 +17,8 @@ export default function Canvas({roomId}) {
                 type: 'element',
                 payload: elements
             })
-
-            
             timer.current=setTimeout(()=>{
-                sendMsg=({
+                sendMsg({
                     type: 'save', payload: elements
                 })
             },1000)
@@ -41,7 +39,7 @@ export default function Canvas({roomId}) {
     };
 
     return (
-        <div style={{ backgroundColor: '#1e1e1e', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+        <div style={{ width:'100%', height:'100%', position:'fixed', top:0, left:0, right:0, bottom:0, zindex:10, display:'flex', flexDirection:'row'}}>
            <Excalidraw
            exdrApi={(api)=>setExdrApi(api)}
            onChange={handlech}
