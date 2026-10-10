@@ -7,7 +7,7 @@ export default function Workspace(){
         <div style={{position: 'relative'}}>
         <div style={{position: 'absolute', top: 10, left:10, color:'black'}}></div>
         <h3>Room: {roomId} || 'Local Test'</h3>
-        <Canvas roomId={roomId} token={token}/>
+        <Canvas roomId={roomId}/>
         </div>
 
     )
