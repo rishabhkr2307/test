@@ -5,36 +5,34 @@ import { useEffect, useState } from 'react';
 export default function Workspace(){
     const [status, setstatus]=useState('checking')
     const [pw,setpw]=useState('')
-    const [err,seterr]=useState('')
+    const [err,setErr]=useState('')
     const {roomId}=useParams();
-
     useEffect(()=>{
-        fetch(`/api/room-access/${roomId}`, {credntials: 'include'})
+        fetch(`/api/room-access/${roomId}`, {credentials: 'include'})
         .then((r)=>setstatus(r.ok? 'allowed':'denied'))
         .catch(()=>setstatus('denied'))
     },[roomId])
-
-    const join=()=>{
-        const r=fetch('/api/join-room',{
+    const join=async()=>{
+        const r=await fetch('/api/join-room',{
             method:'POST',
             credentials:'include',
-            headers:{'type': 'app/json'},
+            headers:{'Content-type': 'application/json'},
             body: JSON.stringify({roomId, roomPass:pw})
         })
         if(r.ok) setstatus('allowed')
-        else seterr((r.json().error || 'failed to join'));
+        else setErr((await r.json().error || 'failed to join'));
     };
-
         if(status ==='checking'){
             return <p>checking</p>
+
         }
-        else{
+        if(status==='denied'){
             return (
                 <div>
                     <h3>Join room {roomId}</h3>
                     <input type="password" value={pw} onChange={(e)=>setpw(e.target.value)} />
                     <button onClick={join}>Join</button>
-                    {err && <p style={{color:'red'}}>err</p>}
+                    {err && <p style={{color:'red'}}> {err}</p>}
                 </div>
             );
         }
