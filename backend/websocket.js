@@ -7,42 +7,49 @@ function setupWebSocket(server){
     const wss=new WebSocket.Server({noServer: true});
 
     const rooms= new Map();
-    server.on('upgrade',(request, socket,head)=>{
+    server.on('upgrade',async(request, socket,head)=>{
+        const reject=(code,msg)=>{
+            socket.write(`${code}   |   ${msg}`)
+            socket.destroy();
+        }
         console.log("attempting connection")
-        const cookieH=request.headers.cookie || '';
-        const match = cookieH.match(/token=([^;]+)/)
-        const token=match? match[1] : null;
+        const token=request.headers.cookies?.match(/token=([^;]+)/)?.[1];
         const burl=`http://${request.headers.host}`
         const purl=new URL(request.url, burl);
         console.log(request.url)
-        const roomid=purl.searchParams.get('roomId')
-        if (!roomid){
+        const roomId=purl.searchParams.get('roomId')
+        if (!roomId){
             console.log('room id not given')
-            socket.write('Unauthorized')
-            socket.destroy();
-            return;
+            return reject (401,'Unauthorised');
         } 
  
         let decode= {username:"Tester"}
-        if(!token ){
-            console.log("rejected due to token")
-        }
-        else{
         try{
-            decode=jwt.verify(token, process.env.JWT_SECRET);
-            console.log(`jwt verified user:${decode.username} | room:${roomid}`)
+            decode=jwt.verify(token, process.env.JWT_SECRET)
+
         }
         catch(err){
-            console.log("Rejected")
-            console.log("hello",err.message)
-            socket.write('Unauthorized');
-            socket.destroy();
+            console.log(err)
+            return reject (401,'Unauthorised');
         }
+        try{
+            const m=await db.query(
+                `select 1 from workspace where username=$1 and room_id=$2;`
+                ,[user.username,roomId]
+            )
+            if(!m.rows.length)
+                return reject (403, 'NO workspaces')
+        }
+
+        catch(err)
+        {
+            console.log(err)
+            return reject (500,'Server');
         }
          wss.handleUpgrade(request, socket, head, (ws)=>{
                 console.log("handshake")
                 ws.user=decode;
-                ws.roomId=roomid;
+                ws.roomId=roomId;
                 wss.emit('connection',ws,request);
             });
     });
@@ -67,7 +74,6 @@ function setupWebSocket(server){
                         if(!isvalid){
                             ws.send(JSON.stringify({type: 'error', message:'Incorrect password'}))
                             return;
-                            
                         }
                     }
                 }
