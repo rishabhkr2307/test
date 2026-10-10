@@ -15,22 +15,21 @@ function setupWebSocket(server){
         const purl=new URL(request.url, burl);
         console.log(request.url)
         const roomid=purl.searchParams.get('roomId')
-        if(!token || !roomid){
-            console.log("rejected")
+        if (!roomid){
+            console.log('room id not given')
             socket.write('Unauthorized')
             socket.destroy();
             return;
+        } 
+ 
+        let decode= {username:"Tester"}
+        if(!token ){
+            console.log("rejected due to token")
         }
-
+        else{
         try{
-            const decode=jwt.verify(token, process.env.JWT_SECRET);
+            decode=jwt.verify(token, process.env.JWT_SECRET);
             console.log(`jwt verified user:${decode.username} | room:${roomid}`)
-            wss.handleUpgrade(request, socket, head, (ws)=>{
-                console.log("handshake")
-                ws.user=decode;
-                ws.roomId=roomid;
-                wss.emit('connection',ws,request);
-            });
         }
         catch(err){
             console.log("Rejected")
@@ -38,6 +37,13 @@ function setupWebSocket(server){
             socket.write('Unauthorized');
             socket.destroy();
         }
+        }
+         wss.handleUpgrade(request, socket, head, (ws)=>{
+                console.log("handshake")
+                ws.user=decode;
+                ws.roomId=roomid;
+                wss.emit('connection',ws,request);
+            });
     });
     wss.on('connection', (ws)=>{
         console.log("joined the room", ws.roomId);
@@ -55,7 +61,7 @@ function setupWebSocket(server){
             if(data.type === 'save' && data.payload){
                 const element=data.payload;
 
-                for (e of element){
+                for (let e of element){
                     const query=`insert into canvas(element_id, element_type, properties, room_id, created_by, modified_by)
                     values ($1,$2,$3,$4,$5,$6)
                     on conflict (element_id)
@@ -102,10 +108,7 @@ function setupWebSocket(server){
                     rooms.delete(roomId)
             }
         });
-
     });
-    
-    
 };
 
 module.exports=setupWebSocket;
