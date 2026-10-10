@@ -5,7 +5,7 @@ function App(){
   return(
     <BrowserRouter>
     <Routes>
-      <Route path="/" element={<Navigate to='/workspace/test-rom-123'/>}/>
+      <Route path="/" element={<Navigate to='/workspace/UKWEMB'/>}/>
       <Route path="/workspace/:roomId" element={<Workspace/>}/>
     </Routes>
     </BrowserRouter>
