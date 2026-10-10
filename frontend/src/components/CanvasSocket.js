@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react";
 
 export function CanvasSocket(roomId, onMessage){
     const ws=useRef(null);
-    
+    const handleRef=useRef(onMessage);
+    handleRef.current=onMessage;
     useEffect(()=>{
         if(!roomId){
             console.log("missing");
@@ -33,7 +34,6 @@ export function CanvasSocket(roomId, onMessage){
             if(ws.current) ws.current.close();
         };
     },[roomId])
-
     const sendMsg=(p)=>{
         if(ws.current && ws.current.readyState ===WebSocket.OPEN){
             ws.current.send(JSON.stringify(p));
