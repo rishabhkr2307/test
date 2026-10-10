@@ -106,7 +106,7 @@ app.post('/create-room',authtoken, async(req,res)=>{
     const link=crypto.randomBytes(16).toString('hex');
     const ReadOnly=crypto.randomBytes(16).toString('hex');
     for (let i=0;i<6;i++){
-        roomid+=chars[random[i] % chars.length]
+        roomid+=chars[random[i] % chars.length];
     }
     let rpassh=null;
     if(rpass)
@@ -141,6 +141,30 @@ app.post('/create-room',authtoken, async(req,res)=>{
         client.release();
     }
 });
+
+app.post('/join-room', authtoken, async(req,res)=>{
+    const {roomId, roomPass, invite}=req.body;
+    try{
+        const r=await db.query(
+            `select room_password, invite_link from rooms where room_id=$1;`,[roomId]);
+            if(!r.rows.length) return res.status(404).json({error:'Room not found'})
+                const viainvite=invite && invite ===roomId.invite_Link;
+            if(!viainvite && roomId.room_Password){
+                const ok=roomPass && await bcrypt.compare(roomPass, roomId.room_Password);
+                if(!ok) return res.status(401).json({error:"Incorrect password"});
+            }
+            await db.query(
+                `inser into workspace (username, room_id, is_owner)
+                select $1, $2, false
+                where not exist(select 1 from workspace where username=$1 and room_id=$2);`,
+                [req.user.username, roomId]
+            );
+        res.json({message:`Joined room ${roomId}`})
+    }
+    catch(err){
+        res.status(500).json({error: "Server Error"});
+    }
+})
 
 const server=http.createServer(app);
 
