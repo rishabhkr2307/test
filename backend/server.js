@@ -100,11 +100,14 @@ app.post('/create-room',authtoken, async(req,res)=>{
     const rpass=req.body.roomPassword;
     console.log(rpass)
     const username=req.user.username;
-    
-    const roomid=crypto.randomBytes(8).toString('hex');
+    const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let roomid=''
+    const random=crypto.randomBytes(6);
     const link=crypto.randomBytes(16).toString('hex');
     const ReadOnly=crypto.randomBytes(16).toString('hex');
-
+    for (let i=0;i<6;i++){
+        roomid+=chars[random[i] % chars.length]
+    }
     let rpassh=null;
     if(rpass)
     {

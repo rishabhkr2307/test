@@ -27,3 +27,4 @@ CREATE table canvas(
     created_by varchar(50) references users(username) on delete cascade,
     modified_by varchar(50) references users(username) on delete cascade
 );
+

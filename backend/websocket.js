@@ -1,7 +1,8 @@
 const WebSocket=require('ws');
 const jwt=require('jsonwebtoken');
 const db=require('./db')
-
+const pool =require('./db')
+const bcrypt=require('bcryptjs')
 function setupWebSocket(server){
     const wss=new WebSocket.Server({noServer: true});
 
@@ -57,10 +58,34 @@ function setupWebSocket(server){
             const roomc=rooms.get(roomId);
             const data=JSON.parse(rawMsg.toString());
             if(!roomc) return;
-
+            if(data.type === 'join_room'){
+                const rpasscheck=await db.query(`select room_password from rooms where room_id=$1;`,[roomId]);
+                if(rpasscheck.length>0){
+                    const passhash=rpasscheck.rows[0].room_password;
+                    if(passhash){
+                        const isvalid=await bcrypt.compare(data.rpasscheck, passhash)
+                        if(!isvalid){
+                            ws.send(JSON.stringify({type: 'error', message:'Incorrect password'}))
+                            return;
+                            
+                        }
+                    }
+                }
+                ws.send(JSON.stringify({
+                    type:'joined', message:'successfully joined the room'
+                }))
+            }
             if(data.type === 'save' && data.payload){
                 const element=data.payload;
-
+                
+                    await pool.query(
+                        `insert into rooms (room_id) values($1) on conflict(room_id) do nothing;`,[ws.roomId]
+                    );
+                    await pool.query(
+                        `insert into canvas (room_id,elements) values($1,$2) on conflict(room_id) do nothing;`,[ws.roomId, JSON.stringify(data.payload)]
+                    )
+                    console.log(`Success saved${data.payload.length} elements in room ${roomId}`)
+                
                 for (let e of element){
                     const query=`insert into canvas(element_id, element_type, properties, room_id, created_by, modified_by)
                     values ($1,$2,$3,$4,$5,$6)
