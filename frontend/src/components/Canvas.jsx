@@ -3,7 +3,8 @@ import { CanvasSocket } from './CanvasSocket';
 import {Excalidraw} from '@excalidraw/excalidraw'
 
 export default function Canvas({roomId}) {
-    const {exdrApi, setExdrApi}=useState(null)
+    const [exdrApi, setExdrApi]=useState(null)
+    const timer=useRef(null)
     const handle=(data)=>{
         if(!exdrApi) return;
         console.log("recieved: ",data)
@@ -16,6 +17,17 @@ export default function Canvas({roomId}) {
                 type: 'element',
                 payload: elements
             })
+
+            
+            timer.current=setTimeout(()=>{
+                sendMsg=({
+                    type: 'save', payload: elements
+                })
+            },1000)
+        
+            if (timer.current){
+                clearTimeout(timer.current)
+            }
         }
     };
 

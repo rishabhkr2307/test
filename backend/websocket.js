@@ -59,9 +59,9 @@ function setupWebSocket(server){
                     const query=`insert into canvas(element_id, element_type, properties, room_id, created_by, modified_by)
                     values ($1,$2,$3,$4,$5,$6)
                     on conflict (element_id)
-                    do update set properties=excluded.properties, last modified=excluded.modified_by;`;
+                    do update set properties=excluded.properties, modified_by=excluded.modified_by;`;
                     const values=[e.id, e.type,JSON.stringify(e), roomId, user.username, user.username];
-                    await db.query(query,values).catch(err=>{console.log("error",err)});
+                    await db.query(query,values).catch(err=>{console.log("DB error",err)});
                 }
                 return;
             }
