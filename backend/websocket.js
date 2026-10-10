@@ -13,13 +13,10 @@ function setupWebSocket(server){
             socket.destroy();
         }
         console.log("attempting connection")
+        const url=new URL(request.url,`http://${request.headers.host}`);
+        const roomId=url.searchParams.get('roomId')
         const token=request.headers.cookies?.match(/token=([^;]+)/)?.[1];
-        const burl=`http://${request.headers.host}`
-        const purl=new URL(request.url, burl);
-        console.log(request.url)
-        const roomId=purl.searchParams.get('roomId')
-        if (!roomId){
-            console.log('room id not given')
+        if (!roomId || !token){
             return reject (401,'Unauthorised');
         } 
  

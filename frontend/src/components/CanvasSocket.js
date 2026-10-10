@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 export function CanvasSocket(roomId, onMessage){
     const ws=useRef(null);
     const handleRef=useRef(onMessage);
-    handleRef.current=onMessage;
+    handleRef.current?.onMessage(data);
     useEffect(()=>{
         if(!roomId){
             console.log("missing");
