@@ -13,35 +13,32 @@ export default function Canvas({roomId}) {
     const {sendMsg}=CanvasSocket(roomId, handle);
     const handlech=(elements, appState)=>{
         if(sendMsg){
-            sendMsg({
-                type: 'element',
-                payload: elements
-            })
-            timer.current=setTimeout(()=>{
-                sendMsg({
-                    type: 'save', payload: elements
-                })
-            },1000)
-        
-            if (timer.current){
+            if(timer.current){
                 clearTimeout(timer.current)
             }
+            timer.current=setTimeout(()=>{
+                sendMsg({type: 'element', payload: elements})
+                sendMsg({type: 'save', payload: elements})
+            },500)
         }
     };
 
     const handlepu=(payload)=>{
+        const now=Date.now();
         if(sendMsg){
+            if(now-lastpointerup.current>50)
             sendMsg({
                 type: 'cursor',
                 pointer:{x:payload.pointer.x, y:payload.pointer.y}
-            })
+            });
+            lastpointerup.current=now;
         }
     };
 
     return (
-        <div style={{ width:'100%', height:'100%', position:'fixed', top:0, left:0, right:0, bottom:0, zindex:10, display:'flex', flexDirection:'row'}}>
+        <div style={{ width:'100%', height:'100%', position:'fixed', top:0, left:0, right:0, bottom:0}}>
            <Excalidraw
-           exdrApi={(api)=>setExdrApi(api)}
+           excalidrawAPI={(api)=>setExdrApi(api)}
            onChange={handlech}
            onPointerUpdate={handlepu}
            theme='dark'
