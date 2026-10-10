@@ -11,7 +11,7 @@ export default function Workspace(){
             color:'green',
             margin:0,
             pointerEvents:'none'}}>
-                Room: {roomId} || 'Local Test'</h3>
+                Room: {roomId || 'Local Test'}</h3>
         <Canvas roomId={roomId}/>
         </>
     )
