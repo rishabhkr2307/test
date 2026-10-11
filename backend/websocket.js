@@ -9,21 +9,19 @@ function setupWebSocket(server){
     const rooms= new Map();
     server.on('upgrade',async(request, socket,head)=>{
         const reject=(code,msg)=>{
-            socket.write(`${code}   |   ${msg}`)
+            socket.write(`HTTP/1.1 ${code} ${msg}\r\n\r\n`)
             socket.destroy();
         }
         console.log("attempting connection")
         const url=new URL(request.url,`http://${request.headers.host}`);
         const roomId=url.searchParams.get('roomId')
-        const token=request.headers.cookies?.match(/token=([^;]+)/)?.[1];
+        const token=request.headers.cookie?.match(/token=([^;]+)/)?.[1];
         if (!roomId || !token){
             return reject (401,'Unauthorised');
         } 
- 
         let decode= {username:"Tester"}
         try{
             decode=jwt.verify(token, process.env.JWT_SECRET)
-
         }
         catch(err){
             console.log(err)
@@ -32,7 +30,7 @@ function setupWebSocket(server){
         try{
             const m=await db.query(
                 `select 1 from workspace where username=$1 and room_id=$2;`
-                ,[user.username,roomId]
+                ,[decode.username,roomId]
             )
             if(!m.rows.length)
                 return reject (403, 'NO workspaces')
@@ -62,31 +60,9 @@ function setupWebSocket(server){
             const roomc=rooms.get(roomId);
             const data=JSON.parse(rawMsg.toString());
             if(!roomc) return;
-            if(data.type === 'join_room'){
-                const rpasscheck=await db.query(`select room_password from rooms where room_id=$1;`,[roomId]);
-                if(rpasscheck.length>0){
-                    const passhash=rpasscheck.rows[0].room_password;
-                    if(passhash){
-                        const isvalid=await bcrypt.compare(data.rpasscheck, passhash)
-                        if(!isvalid){
-                            ws.send(JSON.stringify({type: 'error', message:'Incorrect password'}))
-                            return;
-                        }
-                    }
-                }
-                ws.send(JSON.stringify({
-                    type:'joined', message:'successfully joined the room'
-                }))
-            }
+            
             if(data.type === 'save' && data.payload){
                 const element=data.payload;
-                
-                    await pool.query(
-                        `insert into rooms (room_id) values($1) on conflict(room_id) do nothing;`,[ws.roomId]
-                    );
-                    await pool.query(
-                        `insert into canvas (room_id,elements) values($1,$2) on conflict(room_id) do nothing;`,[ws.roomId, JSON.stringify(data.payload)]
-                    )
                     console.log(`Success saved${data.payload.length} elements in room ${roomId}`)
                 
                 for (let e of element){

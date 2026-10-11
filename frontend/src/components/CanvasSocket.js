@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 export function CanvasSocket(roomId, onMessage){
     const ws=useRef(null);
     const handleRef=useRef(onMessage);
-    handleRef.current?.onMessage(data);
+    handleRef.current=onMessage;
     useEffect(()=>{
         if(!roomId){
             console.log("missing");
@@ -20,10 +20,7 @@ export function CanvasSocket(roomId, onMessage){
         ws.current.onmessage= (e)=>{
             console.log("REcieved", e.data);
             try{
-            const data=JSON.parse(e.data);
-            if(onMessage) {
-                onMessage(data)
-               }
+            handleRef.current?.(JSON.parse(e.data));
         }
             catch(err){
                 console.log("Failed parsing", err);
