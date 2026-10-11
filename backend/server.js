@@ -52,6 +52,13 @@ app.get('/room-access/:roomId', authtoken, async(req,res)=>{
             res.sendStatus(200)
         else
             res.sendStatus(403)
+        const m=await db.query('select properties from canvas where room_id=$1 and element_id is not null'
+            ,[req.params.roomId]
+        )
+        const elements=m.rows.map(row=>{
+            typeof row.properties ==='string' ? JSON.parse(row.properties): row.properties
+        })
+        res.json({elements})
     }
     catch(err){
         console.log(err)
