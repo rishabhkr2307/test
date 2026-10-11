@@ -20,7 +20,7 @@ export default function Workspace(){
             body: JSON.stringify({roomId, roomPass:pw})
         })
         if(r.ok) setstatus('allowed')
-        else setErr((await r.json().error || 'failed to join'));
+        else setErr((await r.json()).error || 'failed to join');
     };
         if(status ==='checking'){
             return <p>checking</p>

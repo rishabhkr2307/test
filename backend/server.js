@@ -14,6 +14,22 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
 
+const authtoken=(req,res,next)=>{
+    const token=req.cookies.token;
+    if(!token){
+        return res.status(401).json({error:"Access Denied"});
+    }
+    try{
+    const verified=jwt.verify(token, process.env.JWT_SECRET);
+    req.user=verified;
+    next();
+    }
+    catch(err)
+    {
+        return res.status(403).json({error: "Invalid token"});
+    }
+}
+
 app.get('/', (req,res)=>{
     res.sendFile(path.join(__dirname,"index.html"));
 });
@@ -27,6 +43,21 @@ app.get('/login',(req,res)=>{
     res.sendFile(path.join(__dirname,"login.html"))
 })
 
+app.get('/room-access/:roomId', authtoken, async(req,res)=>{
+    try{
+        const r=await db.query('select 1 from workspace where username=$1 and room_id=$2;',
+            [req.user.username, req.params.roomId]
+        );
+        if(r.rows.length)
+            res.sendStatus(200)
+        else
+            res.sendStatus(403)
+    }
+    catch(err){
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
 
 app.post('/register',async(req,res)=>{
     const{username , password}=req.body;
@@ -51,7 +82,7 @@ app.post('/login', async(req,res)=>{
     const {username,password}=req.body;
 
     if(!username || !password){
-        res.status(400).json({Error: "either username or password not submmitted"});
+        return res.status(400).json({Error: "either username or password not submmitted"});
     }
 
     try{
@@ -65,7 +96,7 @@ app.post('/login', async(req,res)=>{
         const user=result.rows[0];
         const isvalid=await bcrypt.compare(password, user.user_password);
         if(!isvalid){
-            res.status(401).json({error: "wrong password"});
+            return res.status(401).json({error: "wrong password"});
         }
         const token=jwt.sign({username: user.username},process.env.JWT_SECRET,{expiresIn: '24h'});
        
@@ -79,25 +110,10 @@ app.post('/login', async(req,res)=>{
     }
 });
 
-const authtoken=(req,res,next)=>{
-    const token=req.cookies.token;
-    if(!token){
-        return res.status(401).json({error:"Access Denied"});
-    }
-    try{
-    const verified=jwt.verify(token, process.env.JWT_SECRET);
-    req.user=verified;
-    next();
-    }
-    catch(err)
-    {
-        return res.status(403).json({error: "Invalid token"});
-    }
-}
 
 app.post('/create-room',authtoken, async(req,res)=>{
     console.log(req.body)
-    const rpass=req.body.roomPassword;
+    const rpass=req.body?.roomPassword;
     console.log(rpass)
     const username=req.user.username;
     const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -143,25 +159,29 @@ app.post('/create-room',authtoken, async(req,res)=>{
 });
 
 app.post('/join-room', authtoken, async(req,res)=>{
-    const {roomId, roomPass, invite}=req.body;
+    const {roomId, roomPass, invite}=req.body ?? {};
+    console.log('type',req.headers['content-type'], 'body',req.body)
+    if(!roomId) return res.status(400).json({error: "No roomID"})
     try{
         const r=await db.query(
             `select room_password, invite_link from rooms where room_id=$1;`,[roomId]);
             if(!r.rows.length) return res.status(404).json({error:'Room not found'})
-                const viainvite=invite && invite ===roomId.invite_Link;
-            if(!viainvite && roomId.room_Password){
-                const ok=roomPass && await bcrypt.compare(roomPass, roomId.room_Password);
+               const room=r.rows[0]
+                const viainvite = invite && invite === room.invite_link;
+            if(!viainvite && room.room_password){
+                const ok = roomPass && await bcrypt.compare(roomPass, room.room_password);
                 if(!ok) return res.status(401).json({error:"Incorrect password"});
             }
             await db.query(
-                `inser into workspace (username, room_id, is_owner)
-                select $1, $2, false
-                where not exist(select 1 from workspace where username=$1 and room_id=$2);`,
+                `insert into workspace (username, room_id, is_owner)
+                select $1::varchar, $2::varchar, false
+                where not exists(select 1 from workspace where username=$1 and room_id=$2);`,
                 [req.user.username, roomId]
             );
         res.json({message:`Joined room ${roomId}`})
     }
     catch(err){
+        console.log(err)
         res.status(500).json({error: "Server Error"});
     }
 })
