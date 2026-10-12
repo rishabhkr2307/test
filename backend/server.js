@@ -43,15 +43,33 @@ app.get('/login',(req,res)=>{
     res.sendFile(path.join(__dirname,"login.html"))
 })
 
+app.get('/room-elements/:roomId', authtoken, async(req,res)=>{
+    try{
+        const m=await db.query('select 1 from workspace where username=$1 and room_id=$2',
+            [req.user.username, req.params.roomId]
+        )
+        if(!m.rows.length)
+            return res.sendStatus(403)
+        const r=await db.query('select properties from canvas where room_id=$1 and element_id is not null;',
+            [req.params.roomId])
+            
+            const elements=r.rows.map(row=>
+                typeof row.properties === 'string' ? JSON.parse(row.properties) : row.properties
+        )
+        return res.json({elements})
+    }
+    catch(err){
+        console.log("error",err)
+    }
+})
+
 app.get('/room-access/:roomId', authtoken, async(req,res)=>{
     try{
         const r=await db.query('select 1 from workspace where username=$1 and room_id=$2;',
             [req.user.username, req.params.roomId]
         );
-        if(r.rows.length)
-            res.sendStatus(200)
-        else
-            res.sendStatus(403)
+        if(!r.rows.length)
+            return res.sendStatus(403)
         const m=await db.query('select properties from canvas where room_id=$1 and element_id is not null'
             ,[req.params.roomId]
         )
@@ -62,7 +80,7 @@ app.get('/room-access/:roomId', authtoken, async(req,res)=>{
     }
     catch(err){
         console.log(err)
-        res.sendStatus(500)
+        if(!headersSent) res.sendStatus(500)
     }
 })
 
