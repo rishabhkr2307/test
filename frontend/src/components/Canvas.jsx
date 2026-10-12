@@ -7,17 +7,21 @@ export default function Canvas({roomId}) {
     const [exdrApi, setExdrApi]=useState(null)
     const timer=useRef(null)
     const [initial, setInitial]=useState(null)
+    const lastpointerup=useRef(0)
+    
     useEffect(()=>{
         fetch(`/api/room-elements/${roomId}`, {credentials:'include'})
         .then(r=>r.json())
         .then(d=>setInitial(d.elements || []))
         .catch(()=> setInitial([]))
     },[roomId])
-    const lastpointerup=useRef(0)
+
     const handle=(data)=>{
         if(!exdrApi) return;
-        console.log("recieved: ",data)
-    }
+        if(data.type ==='element' && data.payload){
+            exdrApi.updateScene({elements:data.payload});
+        }
+    };
 
     const {sendMsg}=CanvasSocket(roomId, handle);
     const handlech=(elements, appState)=>{
@@ -38,7 +42,8 @@ export default function Canvas({roomId}) {
             if(now-lastpointerup.current>50)
                 sendMsg({
             type: 'cursor',
-            pointer:{x:payload.pointer.x, y:payload.pointer.y}
+            pointer:{x:payload.pointer.x, y:
+                payload.pointer.y}
         });
         lastpointerup.current=now;
     }

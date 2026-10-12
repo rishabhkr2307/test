@@ -63,7 +63,6 @@ function setupWebSocket(server){
             
             if(data.type === 'save' && data.payload){
                 const element=data.payload;
-                    console.log(`Success saved${data.payload.length} elements in room ${roomId}`)
                 
                 for (let e of element){
                     const query=`insert into canvas(element_id, element_type, properties, room_id, created_by, modified_by)
