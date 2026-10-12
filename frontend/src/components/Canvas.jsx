@@ -6,6 +6,13 @@ import '@excalidraw/excalidraw/index.css';
 export default function Canvas({roomId}) {
     const [exdrApi, setExdrApi]=useState(null)
     const timer=useRef(null)
+    const [initial, setInitial]=useState(null)
+    useEffect(()=>{
+        fetch(`/api/room-elements/${roomId}`, {credentials:'include'})
+        .then(r=>r.json())
+        .then(d=>setInitial(d.elements || []))
+        .catch(()=> setInitial([]))
+    },[roomId])
     const lastpointerup=useRef(0)
     const handle=(data)=>{
         if(!exdrApi) return;
@@ -36,11 +43,13 @@ export default function Canvas({roomId}) {
         lastpointerup.current=now;
     }
     };
-
+    if (initial === null) 
+        return <p>loading...</p>
     return (
         <div style={{ width:'100%', height:'100%', position:'fixed', top:0, left:0, right:0, bottom:0, zIndex:10}}>
            <Excalidraw
            excalidrawAPI={(api)=>setExdrApi(api)}
+           initialData={{elements:initial}}
            onChange={handlech}
            onPointerUpdate={handlepu}
            theme='dark'
