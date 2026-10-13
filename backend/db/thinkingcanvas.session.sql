@@ -1,4 +1,7 @@
-
+drop table if exists canvas cascade;
+drop table if exists workspace cascade;
+drop table if exists rooms cascade;
+drop table if exists users cascade;
 create table users (
      username varchar(50) primary key,
      user_password varchar(100) not null

@@ -64,6 +64,27 @@ app.get('/room-elements/:roomId', authtoken, async(req,res)=>{
     }
 })
 
+app.get('/room-links/:roomId', authtoken, async(req,res)=>{
+    try{
+        const check= await db.query(
+            'select is_owner from workspace where username=$1 and room_id=$2',
+            [req.user.username, req.params.roomId]
+        )
+        if(!check.rows.length || !check.rows[0].is_owner){
+            return res.status(403).json({error:"Only owners can view links"})
+        }
+
+        const r=await db.query('select invite_link, read_link from rooms where room_id=$1',[req.params.roomId])
+        res.json(r.rows[0])
+    }
+    catch(err){
+        console.log(err);
+        if(!res.headersSent) res.sendStatus(500);
+    }
+});
+
+
+
 app.get('/room-access/:roomId', authtoken, async(req,res)=>{
     try{
         const r=await db.query('select is_owner from workspace where username=$1 and room_id=$2;',
@@ -145,7 +166,7 @@ app.post('/create-room',authtoken, async(req,res)=>{
     for (let i=0;i<6;i++){
         roomid+=chars[random[i] % chars.length];
     }
-    let rpassh=null;
+    let rpassh=null;     
     if(rpass)
     {
         rpassh=await bcrypt.hash(rpass,10);
@@ -177,7 +198,7 @@ app.post('/create-room',authtoken, async(req,res)=>{
     finally{
         client.release();
     }
-});
+});        
 
 app.post('/join-room', authtoken, async(req,res)=>{
     const {roomId, roomPass, invite}=req.body ?? {};
