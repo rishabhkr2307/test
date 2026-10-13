@@ -78,7 +78,7 @@ function setupWebSocket(server){
             switch(data.type)
             {
                 case 'cursor':
-                    toRoom(ws,roomc,data)
+                    toRoom(ws,roomc,{...data, user: user.username})
                     break;
                 case 'element':
                     toRoom(ws,roomc,data)
