@@ -86,6 +86,30 @@ function setupWebSocket(server){
                 case 'elementLock':
                     toRoom(ws,roomc,data)
                     break;
+                case 'save':
+                    const client=await db.pool.connect();
+                    try{
+                        await client.query('BEGIN');
+                        for(const e of data.payload){
+                            await client.query(
+                                `insert into canvas (room_id, element_id properties,modified_by)
+                                values($1, $2, $3, $4)
+                                on conflict(element_id)
+                                do update set properties=excluded.properties, modified_by = excluded.modified_by
+                                where canvas.room_id=excluded.room_id;`,
+                                [roomId,e.id,JSON.stringify(e), user,username]
+                            );
+                        }
+                        await client.query('COMMIT');
+                    }
+                    catch(err){
+                        await client.query("ROLLBACK");
+                        console.error('save error', err);
+                    }
+                    finally{
+                        client.release();
+                    }
+                    break;
                 default:
                     console.warn(`wrong type ${data.type}`)
             }
@@ -107,8 +131,9 @@ function setupWebSocket(server){
             const roomc = rooms.get(roomId);
             if(roomc){
                 roomc.delete(ws);
+                toRoom(ws,roomc,{type:'leave', user:user.username});
                 if(roomc.size===0)
-                    rooms.delete(roomId)
+                    rooms.delete(roomId);
             }
         });
     });

@@ -43,7 +43,11 @@ export default function Canvas({roomId}) {
                 username:data.user
             });
             exdrApi.updateScene({collaborators: new Map(collaborators.current)})
-            
+        }
+        
+        if(data.type ==='leave'){
+            collaborators.current.delete(data.user);
+            exdrApi.updateScene({ collaborators: new Map(collaborators.current)});
         }
     };
 
