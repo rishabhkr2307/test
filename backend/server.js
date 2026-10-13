@@ -60,27 +60,23 @@ app.get('/room-elements/:roomId', authtoken, async(req,res)=>{
     }
     catch(err){
         console.log("error",err)
+        if(!res.headersSent) res.sendStatus(500);
     }
 })
 
 app.get('/room-access/:roomId', authtoken, async(req,res)=>{
     try{
-        const r=await db.query('select 1 from workspace where username=$1 and room_id=$2;',
+        const r=await db.query('select is_owner from workspace where username=$1 and room_id=$2;',
             [req.user.username, req.params.roomId]
         );
         if(!r.rows.length)
             return res.sendStatus(403)
-        const m=await db.query('select properties from canvas where room_id=$1 and element_id is not null'
-            ,[req.params.roomId]
-        )
-        const elements=m.rows.map(row=>{
-            typeof row.properties ==='string' ? JSON.parse(row.properties): row.properties
-        })
-        res.json({elements})
+
+        res.json({role: r.rows[0].is_owner? 'owner':'member'});
     }
     catch(err){
         console.log(err)
-        if(!headersSent) res.sendStatus(500)
+        if(!res.headersSent) res.sendStatus(500)
     }
 })
 
