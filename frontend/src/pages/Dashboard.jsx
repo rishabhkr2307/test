@@ -4,12 +4,15 @@ import{api} from './api'
 import { useAuth } from './authcontext'
 
 export default function Dashboard(){
+    const {user,logout}=useAuth()
     const [rooms, setrooms]=useState(null)
     const [createErr, setCreateErr]=useState('')
     const [busy, setBusy]=useState(false)
     const [newpw, setnewpw]=useState('')
     const [joinpw, setjoinpw]=useState('')
     const [joinerr, setjoinerr]=useState('')
+    const [code, setcode]=useState('')
+    const nav=useNavigate()
     useEffect(()=>{
         api('/api/my-rooms').then((a)=>setrooms(a.rooms))
         .catch(()=> setrooms([]))
@@ -47,8 +50,8 @@ export default function Dashboard(){
             <header>
                 <span>THinking Canvas</span>
                 <div>
-                    <span>USername</span>
-                    <button>Logout</button>
+                    <span>{user}</span>
+                    <button onClick={logout}>Logout</button>
                 </div>
             </header>
             <main>
@@ -56,26 +59,34 @@ export default function Dashboard(){
                     <section>
                         <h2>New room</h2>
                         <p>Optional password for people who join by code</p>
-                        <label for="np">Room Password</label>
-                        <input type="passowrd" id='np'/>
-                        <button>Create room</button>
+                        <label htmlFor="np">Room Password</label>
+                        <input type="passowrd" id='np' value={newpw} onChange={(e)=>setnewpw(e.target.value)}/>
+                        {createErr && <p>{createErr}</p>}
+                        <button onClick={create} disabled={busy}>Create room</button>
                     </section>
-                    <form>
+                    <form onSubmit={join}>
                         <h2>Join a room</h2>
                         <p>Enter a 6 digit code</p>
-                        <label for="rc">Room Code</label>
-                        <input id="rc" maxength="6" required/>
+                        <label htmlFor="rc">Room Code</label>
+                        <input id="rc" value={code} onChange={(e)=> setcod(e.target.value)}maxength={6} required/>
                         <label for="jp">Password if any</label>
-                        <input id="jp" type="password"/>
+                        <input id="jp" type="password" value={joinpw} onChange={(e)=> setjoinpw(e.target.value)}/>
+                        {joinerr && <p>{joinerr}</p>}
                         <button>Join</button>
                     </form>
                 </div>
                 <h2>Your rooms</h2>
-                <p>You arent in any room yet. create or join with code</p>
+                {rooms===null && <p>loading....</p>}
+                (rooms?.length===0 && 
+                <p>You arent in any room yet. create or join with code</p>)
                 <div>
-                    <code>ROOM CODE</code>
-                    <span>Owner</span>
-                    <a href="/workshop/ROOM_CODE">OPEN</a>
+      {         rooms?.map((r) => (
+                    <div key={r.room_id}>
+                    <code>{r.room_id}</code>
+                    <span>{r.is_owner ? 'Owner' : 'Member'}</span>
+                    <Link to={`/workspace/${r.room_id}`}>Open</Link>
+                </div>
+              ))}
                 </div>
             </main>
         </>
