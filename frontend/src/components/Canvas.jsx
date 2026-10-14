@@ -37,9 +37,9 @@ export default function Canvas({roomId}) {
 
         if(data.type ==='cursor' && data.pointer){
             collaborators.current.set(data.user,{
-                pointer:{x: data.pointer.x, y: data.pointer.y,},
+                pointer:{x: data.pointer.x, y: data.pointer.y,tool:'pointer'},
                 button:"up",
-                selectedElementsId:{},
+                selectedElementsIds:{},
                 username:data.user
             });
             exdrApi.updateScene({collaborators: new Map(collaborators.current)})
