@@ -21,6 +21,7 @@ export function Authpro({children}){
     }
     const register=(async(username, password)=>{
         await api('/api/register', {method:'POST', body:{username, password}})
+        await login(username,password)
     })
     const logout=(async()=>{
         await api('/api/logout', {method:'POST'})
