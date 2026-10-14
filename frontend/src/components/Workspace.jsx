@@ -1,98 +1,86 @@
-import {useParams} from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Canvas from './Canvas'
-import { useEffect, useState } from 'react';
+import { api } from '../pages/api'
 
-export default function Workspace(){
-    const [status, setstatus]=useState('checking');
-    const [pw,setpw]=useState('');
-    const [err,setErr]=useState('');
-    const {roomId}=useParams();
-    const searchparams=new URLSearchParams(window.location.search);
-    const iToken=searchparams.get('invite');
-    const [sLink, setSLink]= useState(null);
+export default function Workspace() {
+    const { roomId } = useParams()
+    const [params] = useSearchParams()
+    const inviteToken = params.get('invite')
+    const navigate = useNavigate()
 
-    useEffect(()=>{
-        fetch(`/api/room-access/${roomId}`, {credentials: 'include'})
-        .then(async (r)=>{
-        if(r.ok){
-            const data=await r.json();
-            setstatus('allowed')
+    const [status, setStatus] = useState('checking')
+    const [links, setLinks] = useState(null)
+    const [pw, setPw] = useState('')
+    const [err, setErr] = useState('')
+    const [copied, setCopied] = useState(false)
 
-            if(data.role==='owner'){
-                fetch(`/api/room-links/${roomId}`, {credentials: 'include'})
-                .then(res=>res.json())
-                .then(links=> setSLink(links))
+    useEffect(() => {
+        let cancelled = false;                             
+        (async () => {
+            try {
+                let access
+                try {
+                    access = await api(`/api/room-access/${roomId}`)
+                } catch (e) {
+                    if (e.status !== 403 || !inviteToken) throw e
+                    await api('/api/join-room', { method: 'POST', body: { roomId, invite: inviteToken } })  
+                    access = await api(`/api/room-access/${roomId}`)
+                    navigate(`/workspace/${roomId}`, { replace: true })  
+                }
+                if (cancelled) return
+                setStatus('allowed')
+                if (access.role === 'owner') setLinks(await api(`/api/room-links/${roomId}`))
+            } catch {
+                if (!cancelled) setStatus('denied')
             }
-        }
-        else if(iToken){
-            fetch('/api/join-room',{
-                method:'POST',
-                credentials:'include',
-                headers:{'Content-Type': 'application/json'},
-                body: JSON.stringify({roomId, invite: iToken})
-            })
-            .then(joinRes=>{
-                if(joinRes.ok) setstatus('allowed');
-                else setstatus('denied')
-            })
-        }
-        else setstatus('denied');
-        })
-        .catch(()=> setstatus('denied'));
-    },[roomId, iToken])
-const join=()=>{
-    fetch('/api/join-room',{
-        method:'POST',
-        credentials: 'include',
-        headers:{'content-type':'application/json'},
-        body: JSON.stringify({roomId, roomPass:pw})
-    })
-    .then(async (res)=>{
-        if(res.ok){
-            setstatus('allowed');
-        }
-        else{
-            const data=await res.json();
-            setErr(data.error || 'Failed to join');
-        }
-    });
-}
+        })()                                               
+        return () => { cancelled = true }
+    }, [roomId, inviteToken])
 
-        if(status ==='checking'){
-            return <p>checking</p>
+    const join = async (e) => {
+        e.preventDefault()
+        setErr('')                                          
+        try {
+            await api('/api/join-room', { method: 'POST', body: { roomId, roomPass: pw } })
+            setStatus('allowed')
+        } catch (e2) {
+            setErr(e2.message)
+        }
+    }
 
-        }
-        if(status==='denied'){
-            return (
-                <div>
-                    <h3>Join room {roomId}</h3>
-                    <input type="password" value={pw} onChange={(e)=>setpw(e.target.value)} />
-                    <button onClick={join}>Join</button>
-                    {err && <p style={{color:'red'}}> {err}</p>}
-                </div>
-            );
-        }
-    return(
+    const copyInvite = async () => {
+        await navigator.clipboard.writeText(`${window.location.origin}/workspace/${roomId}?invite=${links.invite_link}`)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+    }
+
+    if (status === 'checking') return <div className="center muted">Checking access...</div>
+
+    if (status === 'denied') {
+        return (
+            <div className="center">
+                <form className="card auth-card" onSubmit={join}>   
+                    <h1>Join room {roomId}</h1>
+                    <p className="muted">This room needs a password, or you don't have access.</p>
+                    <label htmlFor="rp">Room password</label>
+                    <input id="rp" type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus />
+                    {err && <p className="error">{err}</p>}
+                    <button className="btn">Join</button>
+                    <p style={{ textAlign: 'center', marginTop: 18 }}><Link to="/dashboard">Back to dashboard</Link></p>
+                </form>
+            </div>
+        )
+    }
+
+    return (
         <>
-        <div style={{position:'absolute', top:'10px', left:'10px', color:'white',
-            backgroundColor:'black', padding:'10px', borderRadius:'10%', zIndex:100,
-            display:'flex', gap:'15px', alignItems:'center'
-        }}>
-            <strong>ROOM: {roomId}</strong>
-            {sLink &&(
-                <button onClick={()=>{
-                    const url=`${window.location.origin}/workspace/${roomId}?{sLink.invite_link}`
-                    navigator.clipboard.writeText(url);
-                    alert("Invire link copied to clipboard");
-                }} style={{padding:'4px 10px', cursor:'pointer',
-                    backgroundColor:'gray', color:'white', border:'none', borderRadius:'4px'
-                }}>
-                    Copy Invite Link
-                </button>
-            )}
-        </div>
-        <Canvas roomId={roomId}/>
-            </>
-    );
+            <div className="room-bar">
+                <Link to="/dashboard">&larr; Dashboard</Link>
+                <strong>Room {roomId}</strong>
+                {links && <button className="btn ghost" onClick={copyInvite}>{copied ? 'Copied!' : 'Copy invite link'}</button>}   
+            </div>
+            <Canvas roomId={roomId} />
+        </>
+    )
 }
-             
