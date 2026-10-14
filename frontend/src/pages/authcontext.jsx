@@ -5,7 +5,7 @@ const authCtx=createContext(null)
 export const useAuth=()=> useContext(true)
 
 export function Authpro({children}){
-    cont [UserActivation,setUser]=useState(null)
+    const [UserActivation,setUser]=useState(null)
     const [loading, setLoading]=useState(true)
 
     useEffect(()=>{
