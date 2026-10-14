@@ -43,6 +43,23 @@ app.get('/login',(req,res)=>{
     res.sendFile(path.join(__dirname,"login.html"))
 })
 
+app.get('/me', authtoken, (req,res)=>{
+    res.json({username:req.user.username});
+});
+
+app.get('/my-rooms', authtoken, async(req,res)=>{
+    try{
+        const r=await db.query('select room_id, is_owner from workspace where username=$1 order by is_owner desc, room_id',
+            [req.user.username])
+        res.json({rooms: r.rows})
+        }
+        catch(err){
+            console.log(err)
+            if(!res.headersSent) res.sendStatus(500)
+        }
+})
+
+
 app.get('/room-elements/:roomId', authtoken, async(req,res)=>{
     try{
         const m=await db.query('select 1 from workspace where username=$1 and room_id=$2',
