@@ -13,6 +13,7 @@ export default function Dashboard() {
     const [createErr, setCreateErr] = useState('')
     const [joinErr, setJoinErr] = useState('')
     const [busy, setBusy] = useState(false)
+    const createdCount=rooms?rooms.filter((r)=> r.is_owner).length:0
 
     useEffect(() => {
         api('/api/my-rooms').then((d) => setRooms(d.rooms)).catch(() => setRooms([]))

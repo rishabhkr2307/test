@@ -24,8 +24,14 @@ export function AuthProvider({ children }) {
         await login(username, password)
     }
     const logout = async () => {
+        try{
         await api('/api/logout', { method: 'POST' })
-        setUser(null)
+             }
+        catch(e){
+            console.log("logout failed", e.message)
+        }
+        finally{
+        setUser(null)}
     }
 
     return <AuthCtx.Provider value={{ user, loading, login, register, logout }}>{children}</AuthCtx.Provider>

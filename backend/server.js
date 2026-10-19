@@ -47,6 +47,11 @@ app.get('/me', authtoken, (req,res)=>{
     res.json({username:req.user.username});
 });
 
+app.post('/logout',(req,res)=>{
+    res.clearCookie('token')
+    res.sendStatus(204)
+})
+
 app.get('/my-rooms', authtoken, async(req,res)=>{
     try{
         const r=await db.query('select room_id, is_owner from workspace where username=$1 order by is_owner desc, room_id',

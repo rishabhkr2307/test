@@ -39,7 +39,7 @@ export default function Canvas({roomId}) {
             collaborators.current.set(data.user,{
                 pointer:{x: data.pointer.x, y: data.pointer.y,tool:'pointer'},
                 button:"up",
-                selectedElementsIds:{},
+                selectedElementIds:{},
                 username:data.user
             });
             exdrApi.updateScene({collaborators: new Map(collaborators.current)})
@@ -98,7 +98,6 @@ export default function Canvas({roomId}) {
            onPointerUpdate={handlepu}
            theme='dark'
            />
-           
         </div>
     );
 }  
