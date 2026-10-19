@@ -93,12 +93,12 @@ export default function Canvas({roomId}) {
 
     if (initial === null) 
         return (
-        <div style={{color:'white', backgroundColor: 'grey', width:'100vw', height:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
+        <div >
             <h2>Loading canvas Data</h2>
             <p>IF stuck supabase is disconnect</p>
         </div>)
     return (
-        <div style={{ width:'100vw', height:'100vh', position:'fixed', top:0, left:0, right:0, bottom:0, zIndex:10}}>
+        <div style={{ width:'100vw', height:'100vh', position:'relative', top:0, left:0, right:0, bottom:0, zIndex:10}}>
            <Excalidraw
            excalidrawAPI={(api)=>setExdrApi(api)}
            initialData={{elements:initial}}
