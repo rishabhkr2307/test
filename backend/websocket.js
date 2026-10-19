@@ -137,6 +137,17 @@ function setupWebSocket(server){
             }
         });
     });
+    function closeRoom(roomId){
+        const roomc=rooms.get(roomId)
+        if(!roomc) return
+        rooms.delete(roomId)
+        roomc.forEach(c=>{
+            if(c.readyState===1){
+            c.send(JSON.stringify({type:'room deleted'}))
+            c.close(4000, 'room deleted')
+            }
+        })
+    }
 };
 
 module.exports=setupWebSocket;

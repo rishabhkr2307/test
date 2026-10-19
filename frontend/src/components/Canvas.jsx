@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { CanvasSocket } from './CanvasSocket';
 import {Excalidraw, reconcileElements, restoreElements} from '@excalidraw/excalidraw'
 import '@excalidraw/excalidraw/index.css';
+import {useNavigate} from 'react-router-dom'
 
 export default function Canvas({roomId}) {   
     const [exdrApi, setExdrApi]=useState(null)
@@ -11,6 +12,8 @@ export default function Canvas({roomId}) {
     const knownversions=useRef({})
     const collaborators=useRef(new Map());
     const pending=useRef(new Map())
+    const nav=useNavigate()
+
     
     useEffect(()=>{
         fetch(`/api/room-elements/${roomId}`, {credentials:'include'})
@@ -23,6 +26,11 @@ export default function Canvas({roomId}) {
     },[roomId])
 
     const handle=(data)=>{
+        if(data.type==='room_deleted'){
+            alert('this room is deleted by the owner')
+            nav('/dashboard', {replace:true})
+            return;
+        }
         if(!exdrApi) return;
         if(data.type ==='element' && data.payload){
             data.payload.forEach(e=>{

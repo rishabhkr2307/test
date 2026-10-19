@@ -8,6 +8,7 @@ const crypto=require('crypto')
 const path=require('path')
 const http=require('http')
 const setupWebSocket=require('./websocket')
+let wsApi;
 
 const app=express();
 app.use(express.json());
@@ -62,6 +63,21 @@ app.get('/my-rooms', authtoken, async(req,res)=>{
             console.log(err)
             if(!res.headersSent) res.sendStatus(500)
         }
+})
+
+app.delete('/rooms/:roomId', authtoken, async (req, res) => {
+    try {
+        const q = await db.query(`delete from rooms where room_id = $1 and exists (select 1 from workspace where room_id = $1 and username = $2 and is_owner)`,
+            [req.params.roomId, req.user.username]
+        )
+        if (q.rowCount === 0)
+            return res.status(403).json({ error: 'Only the owner can delete this room' })
+        wsApi?.closeRoom(req.params.roomId)  
+        res.sendStatus(204)
+    } catch (err) {
+        console.log(err)
+        if (!res.headersSent) res.sendStatus(500)
+    }
 })
 
 
@@ -252,7 +268,7 @@ app.post('/join-room', authtoken, async(req,res)=>{
 
 const server=http.createServer(app);
 
-setupWebSocket(server);
+wsApi=setupWebSocket(server);
 
 const port=process.env.PORT || 8080;
 server.listen(port, ()=>{

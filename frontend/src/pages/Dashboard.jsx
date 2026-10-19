@@ -16,7 +16,9 @@ export default function Dashboard() {
     const createdCount=rooms?rooms.filter((r)=> r.is_owner).length:0
 
     useEffect(() => {
-        api('/api/my-rooms').then((d) => setRooms(d.rooms)).catch(() => setRooms([]))
+        const load =()=>api('/api/my-rooms').then((d) => setRooms(d.rooms)).catch(() => setRooms([]))
+        load()
+        window.addEventListener('focus', load)
     }, [])        
 
     const create = async () => {
@@ -43,6 +45,17 @@ export default function Dashboard() {
         } catch (e2) {
             setJoinErr(e2.message)                         
             setBusy(false)
+        }
+
+    }
+    const deleteroom=async(roomId)=>{
+        if(!window.confirm(`Delete room ${roomId}? Are you sure you want to permanently delete the room`))
+            try{
+        await api(`/api/rooms/${roomId}`, {method:'DELETE'})
+        setRooms((prev)=>prev.filter((f)=> f.room_id!==roomId))
+    }
+    catch(err){
+        alert(err.message)
         }
     }
 
@@ -97,6 +110,9 @@ export default function Dashboard() {
                             <span className={`badge`} style={{ background: r.is_owner ? '#2d3748' : '#2b3137', color: r.is_owner ? '#68d391' : '#63b3ed', border: '1px solid #444444', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 500 }}>{r.is_owner ? 'Owner' : 'Member'}</span>
                         </div>
                         <Link className="btn ghost" style={{ textAlign: 'center', background: 'transparent', color: '#e3e3e3', border: '1px solid #444444', padding: '8px', borderRadius: '4px', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }} to={`/workspace/${r.room_id}`}>Open</Link>
+                        {r.is_owner &&(
+                            <button onClick={()=>deleteroom(r.roomId)} style={{background:'transparent', color:'red', }}></button>
+                        )}
                     </div>
                 ))}
             </div>
