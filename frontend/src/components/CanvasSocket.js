@@ -1,40 +1,43 @@
 import { useEffect, useRef } from "react";
 
-export function CanvasSocket(roomId, onMessage){
-    const ws=useRef(null);
-    const handleRef=useRef(onMessage);
-    handleRef.current=onMessage;
-    useEffect(()=>{
-        if(!roomId){
-            console.log("missing");
-            return;
-        }
-        console.log("connecting")
-        const socketUrl=`ws://localhost:8080?roomId=${roomId}`;
-        ws.current= new WebSocket(socketUrl);
+export function CanvasSocket(roomId, onMessage, viewToken) {
+    const ws = useRef(null);
+    const handleRef = useRef(onMessage);
+    handleRef.current = onMessage;
 
-        ws.current.onopen=()=> console.log(`room: ${roomId}`)
-        ws.current.onerror=(error)=>console.log('Error',error);
-        ws.current.onclose=()=>console.log('Closed')
+    useEffect(() => {
+        if (!roomId) return;
 
-        ws.current.onmessage= (e)=>{
-            console.log("REcieved", e.data);
-            try{
-            handleRef.current?.(JSON.parse(e.data));
-        }
-            catch(err){
-                console.log("Failed parsing", err);
+        const socketUrl = viewToken 
+            ? `ws://localhost:8080?roomId=${roomId}&view=${encodeURIComponent(viewToken)}`
+            : `ws://localhost:8080?roomId=${roomId}`;
+
+        // Create the socket instance
+        const socket = new WebSocket(socketUrl);
+        ws.current = socket;
+
+        socket.onopen = () => console.log(`Connected to room: ${roomId}`);
+        socket.onerror = (error) => console.log('Socket error:', error);
+        socket.onclose = () => console.log('Socket closed');
+
+        socket.onmessage = (e) => {
+            try {
+                handleRef.current?.(JSON.parse(e.data));
+            } catch (err) {
+                console.log("Failed parsing message:", err);
             }
         };
 
-        return()=>{
-            if(ws.current) ws.current.close();
+        return () => {
+            socket.close();
         };
-    },[roomId])
-    const sendMsg=(p)=>{
-        if(ws.current && ws.current.readyState ===WebSocket.OPEN){
+    }, [roomId, viewToken]);
+
+    const sendMsg = (p) => {
+        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
             ws.current.send(JSON.stringify(p));
         }
     };
-    return {sendMsg};
+
+    return { sendMsg };
 }

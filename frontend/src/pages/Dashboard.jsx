@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from './api'
 import { useAuth } from './authcontext'
+import Toggle from './ThemeToggle'
 
 export default function Dashboard() {
     const { user, logout } = useAuth()
@@ -19,6 +20,7 @@ export default function Dashboard() {
         const load =()=>api('/api/my-rooms').then((d) => setRooms(d.rooms)).catch(() => setRooms([]))
         load()
         window.addEventListener('focus', load)
+        return()=>window,removeEventListener('focus',load)
     }, [])        
 
     const create = async () => {
@@ -49,10 +51,11 @@ export default function Dashboard() {
 
     }
     const deleteroom=async(roomId)=>{
-        if(!window.confirm(`Delete room ${roomId}? Are you sure you want to permanently delete the room`))
+        if(!window.confirm(`Delete room ${roomId}? Are you sure you want to permanently delete the room`)) 
+            return
             try{
         await api(`/api/rooms/${roomId}`, {method:'DELETE'})
-        setRooms((prev)=>prev.filter((f)=> f.room_id!==roomId))
+        setRooms((prev)=>prev.filter((r)=> r.room_id!==roomId))
     }
     catch(err){
         alert(err.message)
@@ -62,10 +65,12 @@ export default function Dashboard() {
     return (
     <div >
         <header className="topbar" >
+            
+                <span className="muted" id="username" >{user}</span>
             <span className="brand" >Thinking Canvas</span>
-            <div className="right" >
-                <span className="muted" >{user}</span>
-                <button className="btn ghost" onClick={logout} >Log out</button>
+            <div className='topbar-actions'>
+            <Toggle/>
+                <button className="btn ghost" id='logout' onClick={logout} >Log out</button>
             </div>
         </header>
 
@@ -92,7 +97,7 @@ export default function Dashboard() {
                 </form>
             </div>
 
-            <div >
+            <div className="mid" >
                 <h2>Your rooms</h2>
                 <span>
                     Created by you: <strong>{createdCount}</strong>
@@ -100,19 +105,19 @@ export default function Dashboard() {
             </div>
 
             {rooms === null && <p className="muted" >Loading...</p>}
-            {rooms?.length === 0 && <p className="muted" >You aren't in any rooms yet. Create one or join with a code.</p>}  
+            {rooms?.length === 0 && <p className="muted" >You are not part of any rooms yet. Create one or join with a code.</p>}  
             
             <div className="room-list">
                 {rooms?.map((r) => (
                     <div className="room-item" key={r.room_id}>
-                        <div>
+                        <div className='room-info'>
                             <code>{r.room_id}</code>
-                            <span className={`badge`}>{r.is_owner ? 'Owner' : 'Member'}</span>
-                        </div>
-                        <Link className="btn ghost" to={`/workspace/${r.room_id}`}>Open</Link>
+                            <span className={`badge ${r.is_owner ? 'owner' : 'member'}`}>{r.is_owner ? 'Owner' : 'Member'}</span>
                         {r.is_owner &&(
-                            <button onClick={()=>deleteroom(r.roomId)}></button>
+                            <button className="delete-btn" onClick={()=>deleteroom(r.room_id)}>Delete</button>
                         )}
+                        </div>
+                        <Link className="btn ghost open" to={`/workspace/${r.room_id}`}>Open</Link>
                     </div>
                 ))}
             </div>

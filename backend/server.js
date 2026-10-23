@@ -31,18 +31,6 @@ const authtoken=(req,res,next)=>{
     }
 }
 
-app.get('/', (req,res)=>{
-    res.sendFile(path.join(__dirname,"index.html"));
-});
-
-app.get('/register', (req,res)=>{
-    res.sendFile(path.join(__dirname,"register.html"));
-});
-
-
-app.get('/login',(req,res)=>{
-    res.sendFile(path.join(__dirname,"login.html"))
-})
 
 app.get('/me', authtoken, (req,res)=>{
     res.json({username:req.user.username});
@@ -121,7 +109,25 @@ app.get('/room-links/:roomId', authtoken, async(req,res)=>{
     }
 });
 
+app.get(['/public/room/:roomId', '/api/public/room/:roomId'], async (req, res) => {
+    const token = String(req.query.view || '');
+    if (!token) return res.sendStatus(403);
+    try {
+        const ok = await db.query('select 1 from rooms where room_id=$1 and read_link=$2',
+            [req.params.roomId, token]
+        );
+        if (!ok.rows.length) return res.sendStatus(403);
 
+        const r = await db.query('select properties from canvas where room_id=$1',
+            [req.params.roomId]
+        );
+        const elements = r.rows.map((row) => typeof row.properties === 'string' ? JSON.parse(row.properties) : row.properties);
+        res.json({ elements });
+    } catch (err) {
+        console.log(err);
+        if (!res.headersSent) res.sendStatus(500);
+    }
+});
 
 app.get('/room-access/:roomId', authtoken, async(req,res)=>{
     try{

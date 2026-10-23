@@ -15,7 +15,28 @@ function setupWebSocket(server){
         console.log("attempting connection")
         const url=new URL(request.url,`http://${request.headers.host}`);
         const roomId=url.searchParams.get('roomId')
+        const viewToken=url.searchParams.get('view')
+        if(viewToken && roomId){
+            try{
+                const v=await db.query('select 1 from rooms where room_id=$1 and read_link=$2',
+                    [roomId, viewToken]
+                )
+                if(!v.rows.length)
+                    return reject(403, 'Forbidden')
+            }
+            catch(err){
+                console.log(err)
+                return reject(500,'server')
+            }
+            return wss.handleUpgrade(request, socket, head, (ws)=>{
+                ws.user={username:'viewer'}
+                ws.roomId=roomId
+                ws.viewOnly=true
+                wss.emit('connection', ws,request)
+            })
+        }
         const token=request.headers.cookie?.match(/token=([^;]+)/)?.[1];
+
         if (!roomId || !token){
             return reject (401,'Unauthorised');
         } 
@@ -50,12 +71,13 @@ function setupWebSocket(server){
     });
     wss.on('connection', (ws)=>{
         console.log("joined the room", ws.roomId);
-        const {roomId,user}=ws;
+        const {roomId,user, viewOnly}=ws;
         if(!rooms.has(roomId))
             rooms.set(roomId, new Set());
         rooms.get(roomId).add(ws);
 
         ws.on('message',async(rawMsg)=>{
+            if(viewOnly) return
            try{
             const roomc=rooms.get(roomId);
             const data=JSON.parse(rawMsg.toString());
@@ -95,8 +117,8 @@ function setupWebSocket(server){
                                 `insert into canvas (room_id, element_id properties,modified_by)
                                 values($1, $2, $3, $4)
                                 on conflict(element_id)
-                                do update set properties=excluded.properties, modified_by = excluded.modified_by
-                                where canvas.room_id=excluded.room_id;`,
+                                do update set properties=excluded.properties, modified_by=excluded.modified_by
+                                where canvas.room_id = excluded.room_id;`,
                                 [roomId,e.id,JSON.stringify(e), user,username]
                             );
                         }
@@ -131,6 +153,7 @@ function setupWebSocket(server){
             const roomc = rooms.get(roomId);
             if(roomc){
                 roomc.delete(ws);
+                if(!viewOnly) toRoom(ws,roomc,{type:'leave',user:user.username})
                 toRoom(ws,roomc,{type:'leave', user:user.username});
                 if(roomc.size===0)
                     rooms.delete(roomId);
@@ -143,11 +166,12 @@ function setupWebSocket(server){
         rooms.delete(roomId)
         roomc.forEach(c=>{
             if(c.readyState===1){
-            c.send(JSON.stringify({type:'room deleted'}))
+            c.send(JSON.stringify({type:'room_deleted'}))
             c.close(4000, 'room deleted')
             }
         })
     }
+    return {closeRoom}
 };
 
 module.exports=setupWebSocket;
