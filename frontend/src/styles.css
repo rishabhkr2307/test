@@ -465,3 +465,18 @@ div:has(+ [data-testid="toolbar-embeddable"]),
 div:has(+ button[data-testid="toolbar-embeddable"]) {
     display: none !important;
 }
+
+.excalidraw .ToolIcon__icon {
+    box-sizing: border-box;
+    width: var(--default-button-size);
+    height: var(--default-button-size);
+    color: var(--icon-fill-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--border-radius-lg);
+}
+label:has([data-testid="toolbar-image"]),
+[data-testid="toolbar-image"] {
+    display: none !important;
+}
