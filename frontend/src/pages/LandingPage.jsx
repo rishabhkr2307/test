@@ -15,6 +15,7 @@ export default function LandingPage(){
             <nav className='landing-nav'>
                 <span className='brand'>Thanking Canvas</span>
                 <div className='landing-nav-actions'>
+                    <Toggle/>
                     <Link to="/register" className="btn nav-btn-rimary">Get Started</Link>
                 </div>
             </nav>
@@ -57,19 +58,19 @@ export default function LandingPage(){
                         </div>
                         <div className='mcursor cursor-purple' style={{top:'115px', left:'260px'}}>
                             <svg width='18px' height='18px' viewBox='0 0 24 24' fill='purple' stroke='white' strokeWidth='15px'>
-                                <path d="M3 317 18 3-7 7-3L3 3z"/>
+                                <path d="M3 3l7 18 3-7 7-3L3 3z"/>
                             </svg>
                             <span className='cursor-label purple'>User 1</span>
                         </div>
                         <div className='mcursor cursor-green' style={{top:'185px', left:'660px'}}>
                             <svg width='18px' height='18px' viewBox='0 0 24 24' fill='green' stroke='white' strokeWidth='15px'>
-                                <path d="M3 317 18 3-7 7-3L3 3z"/>
+                                <path d="M3 3l7 18 3-7 7-3L3 3z"/>
                             </svg>
                             <span className='cursor-label purple'>User 2</span>
                         </div>
                         <div className='mcursor cursor-blue' style={{top:'285px', left:'360px'}}>
                             <svg width='18px' height='18px' viewBox='0 0 24 24' fill='blue' stroke='white' strokeWidth='15px'>
-                                <path d="M3 317 18 3-7 7-3L3 3z"/>
+                                <path d="M3 3l7 18 3-7 7-3L3 3z"/>
                             </svg>
                             <span className='cursor-label purple'>User 3</span>
                         </div>

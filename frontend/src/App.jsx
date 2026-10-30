@@ -5,6 +5,7 @@ import ProtectedRoute from './pages/protectedRoute'
 import Dashboard from './pages/Dashboard'
 import AuthPage from './pages/authPage'
 import ViewWorkspace from './pages/viewWorkspace'
+import LandingPage from './pages/LandingPage'
 import {ThemeProvider} from './pages/ThemeContext'
 
 export default function App() {
@@ -13,7 +14,7 @@ export default function App() {
         <BrowserRouter>
             <AuthProvider>
                 <Routes>
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/" element={<LandingPage/>} replace />
                     <Route path="/login" element={<AuthPage mode="login" />} />
                     <Route path="/register" element={<AuthPage mode="register" />} />
                     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
