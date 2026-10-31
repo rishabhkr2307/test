@@ -5,7 +5,6 @@ const cookieParser=require('cookie-parser')
 const jwt=require('jsonwebtoken')
 const db=require('./db')
 const crypto=require('crypto')
-const path=require('path')
 const http=require('http')
 const setupWebSocket=require('./websocket')
 let wsApi;
@@ -13,7 +12,6 @@ let wsApi;
 const app=express();
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.urlencoded({extended: true}));
 
 const authtoken=(req,res,next)=>{
     const token=req.cookies.token;
@@ -109,7 +107,7 @@ app.get('/room-links/:roomId', authtoken, async(req,res)=>{
     }
 });
 
-app.get(['/public/room/:roomId', '/api/public/room/:roomId'], async (req, res) => {
+app.get(['/public/room/:roomId'], async (req, res) => {
     const token = String(req.query.view || '');
     if (!token) return res.sendStatus(403);
     try {
@@ -159,8 +157,9 @@ app.post('/register',async(req,res)=>{
     res.status(201).json({message: 'User registered', user:result.rows[0].username});
     }
     catch(err){
-        console.log(err.message);
-        res.status(500).json({error: 'server error', details: err.message});
+        if(err.code==='23505')
+            return res.status(409).json({error:"Username already takes"})
+        res.status(500).json({error: 'server error'});
     }
 });
 
@@ -168,7 +167,7 @@ app.post('/login', async(req,res)=>{
     const {username,password}=req.body;
 
     if(!username || !password){
-        return res.status(400).json({Error: "either username or password not submmitted"});
+        return res.status(400).json({error: "either username or password not submmitted"});
     }
 
     try{
@@ -186,9 +185,9 @@ app.post('/login', async(req,res)=>{
         }
         const token=jwt.sign({username: user.username},process.env.JWT_SECRET,{expiresIn: '24h'});
        
-        res.cookie('token',token);
+        res.cookie('token',token, {httpOnly:true, sameSite:'lax', maxAge:24*60*60*1000});
 
-        res.status(200).json({token, message: "Login success", username: user.username,});
+        res.status(200).json({ message: "Login success", username: user.username,});
     }
    catch(err){
         console.log(err.message);
@@ -198,9 +197,7 @@ app.post('/login', async(req,res)=>{
 
 
 app.post('/create-room',authtoken, async(req,res)=>{
-    console.log(req.body)
     const rpass=req.body?.roomPassword;
-    console.log(rpass)
     const username=req.user.username;
     const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     let roomid=''
@@ -246,7 +243,6 @@ app.post('/create-room',authtoken, async(req,res)=>{
 
 app.post('/join-room', authtoken, async(req,res)=>{
     const {roomId, roomPass, invite}=req.body ?? {};
-    console.log('type',req.headers['content-type'], 'body',req.body)
     if(!roomId) return res.status(400).json({error: "No roomID"})
     try{
         const r=await db.query(

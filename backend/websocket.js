@@ -1,8 +1,6 @@
 const WebSocket=require('ws');
 const jwt=require('jsonwebtoken');
 const db=require('./db')
-const pool =require('./db')
-const bcrypt=require('bcryptjs')
 function setupWebSocket(server){
     const wss=new WebSocket.Server({noServer: true});
 
@@ -40,7 +38,7 @@ function setupWebSocket(server){
         if (!roomId || !token){
             return reject (401,'Unauthorised');
         } 
-        let decode= {username:"Tester"}
+        let decode;
         try{
             decode=jwt.verify(token, process.env.JWT_SECRET)
         }
@@ -88,9 +86,10 @@ function setupWebSocket(server){
                 
                 for (let e of element){
                     const query=`insert into canvas(element_id, element_type, properties, room_id, created_by, modified_by)
-                    values ($1,$2,$3,$4,$5,$6)
-                    on conflict (element_id)
-                    do update set properties=excluded.properties, modified_by=excluded.modified_by;`;
+                                    values ($1,$2,$3,$4,$5,$6)
+                                    on conflict (element_id)
+                                    do update set properties=excluded.properties, modified_by=excluded.modified_by
+                                    where canvas.room_id = excluded.room_id;`;
                     const values=[e.id, e.type,JSON.stringify(e), roomId, user.username, user.username];
                     await db.query(query,values).catch(err=>{console.log("DB error",err)});
                 }
@@ -104,33 +103,6 @@ function setupWebSocket(server){
                     break;
                 case 'element':
                     toRoom(ws,roomc,data)
-                    break;
-                case 'elementLock':
-                    toRoom(ws,roomc,data)
-                    break;
-                case 'save':
-                    const client=await db.pool.connect();
-                    try{
-                        await client.query('BEGIN');
-                        for(const e of data.payload){
-                            await client.query(
-                                `insert into canvas (room_id, element_id properties,modified_by)
-                                values($1, $2, $3, $4)
-                                on conflict(element_id)
-                                do update set properties=excluded.properties, modified_by=excluded.modified_by
-                                where canvas.room_id = excluded.room_id;`,
-                                [roomId,e.id,JSON.stringify(e), user,username]
-                            );
-                        }
-                        await client.query('COMMIT');
-                    }
-                    catch(err){
-                        await client.query("ROLLBACK");
-                        console.error('save error', err);
-                    }
-                    finally{
-                        client.release();
-                    }
                     break;
                 default:
                     console.warn(`wrong type ${data.type}`)
@@ -153,7 +125,7 @@ function setupWebSocket(server){
             const roomc = rooms.get(roomId);
             if(roomc){
                 roomc.delete(ws);
-                if(!viewOnly) toRoom(ws,roomc,{type:'leave',user:user.username})
+                if(!viewOnly)
                 toRoom(ws,roomc,{type:'leave', user:user.username});
                 if(roomc.size===0)
                     rooms.delete(roomId);
