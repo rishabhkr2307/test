@@ -41,7 +41,15 @@ crypto==1.0.1
 
 1. Clone the repository : [https://github.com/rishabhkr2307/test.git](https://github.com/rishabhkr2307/test.git)
 
-2. Install the dependencies in both frontend and backend files
+2. Install the dependencies in both frontend and backend files 
+    ```bash
+    cd backend
+    npm install
+    ```
+    ```bash
+    cd frontend
+    npm install
+    ```
 
 3. create a .env file in the backend folder like this
 

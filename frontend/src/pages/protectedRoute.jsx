@@ -3,7 +3,6 @@ import { useAuth } from './authcontext'
 
 export default function ProtectedRoute({ children }) {     
     const { user, loading } = useAuth()
-    const loc = useLocation()
     if (loading) return <div className="center muted">Loading...</div>
     if (!user) return <Navigate to='/' replace />  
     return children

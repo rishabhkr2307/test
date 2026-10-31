@@ -10,8 +10,8 @@ function initial(){
             return saved
     }
     catch{
-        return window.matchMedia('(prefers-color-scheme: dark').matches?'dark':'light'
     }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'
 }
 
     export function ThemeProvider({children}){

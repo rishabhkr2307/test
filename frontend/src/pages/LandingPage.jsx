@@ -12,16 +12,16 @@ export default function LandingPage(){
     
     return(
         <div className='landing-wrap'>
-            <nav className='landing-nav anim=top speed-fast'>
+            <nav className='landing-nav anim-top speed-fast'>
                 <span className='brand'>Thinking Canvas</span>
                 <div className='landing-nav-actions'>
                     <Toggle/>
-                    <Link to="/register" className="btn nav-btn-rimary">Get Started</Link>
+                    <Link to="/register" className="btn nav-btn-primary">Get Started</Link>
                 </div>
             </nav>
             <header className='landing-hero slide-up'>
                 <div className='hero-badge anim-down speed-fast delay-1'>Real Time Collaborative Platform</div>
-                <h1 className='hero-heading anim-left speed-normal delay-2'>Thing visually <br />Work Together in Real Time</h1>
+                <h1 className='hero-heading anim-left speed-normal delay-2'>Think visually <br />Work Together in Real Time</h1>
                 <p className='hero-subheading anim-right speed-normal delay-1'>
                     A minimalist infinite canvas made for instant brainstorming, system diagramming and friction-free team collaboration
                 </p>
@@ -41,7 +41,7 @@ export default function LandingPage(){
                         <svg className="mock-svg-layer" viewBox="0 0 1000 380" preserveAspectRatio="none" fill="none">
                             <path d="M 230 130 L 420 130" stroke="var(--muted)" strokeWidth="2" strokeDasharray="6 6" />
                             <path d="M 580 230 L 750 170" stroke="var(--muted)" strokeWidth="2" />
-                            <polygon points=",170 738,163 740,175" fill="var(--muted)" />
+                            <polygon points="753,170 740,163 750,175" fill="var(--muted)" />
                         </svg>
                         <div className="mock-shape rect" style={{ top: '100px', left: '80px' }}>
                             <span>Shape 1</span>
@@ -79,24 +79,24 @@ export default function LandingPage(){
                 <div className='feature-card card anim-left speed-normal delay-3'>
                     <h3>Low latency Sync</h3>
                     <p className='muted'>
-                        Instant element mergin and dynamic cursor tracking powered by real-time WebSocket archtechture.
+                        Instant element merging and dynamic cursor tracking powered by real-time WebSocket architechture.
                     </p>
                 </div>
                 <div className='feature-card card anim-left speed-normal delay-3'>
                     <h3>Protected Workspaces</h3>
                     <p className='muted'>
-                        Create a passowrd protected rooms or share direct invite links wth full owner admin controls
+                        Create a password protected rooms or share direct invite links with full owner admin controls
                     </p>
                 </div>
                 <div className='feature-card card anim-left speed-normal delay-3'>
-                    <h3>Public view-pnly Sharing</h3>
+                    <h3>Public view-only Sharing</h3>
                     <p className='muted'>
-                        Present a finised visual ideas cleanly to clients and reviewers using secure read-only URL tokens
+                        Present a finished visual ideas cleanly to clients and reviewers using secure read-only URL tokens
                     </p>
                 </div>
             </section>
             <footer className='Footer muted'>
-                <p>&copy; 2026 Thinking Canvas. BUilt for distraction-free visual collaboration</p>
+                <p>&copy; 2026 Thinking Canvas. Built for distraction-free visual collaboration</p>
             </footer>
         </div>
     )
