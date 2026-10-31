@@ -36,19 +36,20 @@ export default function AuthPage({ mode }) {
 
     return (
         <div className="center">
-            <div className="theme-corner"><Toggle/></div>
-            <form className="card auth-card" onSubmit={submit}>
+            <div className="theme-corner anim-top speed-fast"><Toggle/></div>
+            <form className="card auth-card anim-scale speed-normal delay-1 " onSubmit={submit}>
                 <h1>{isLogin ? 'Welcome back' : 'Create account'}</h1>
                 <p className="muted">{isLogin ? 'Log in to your canvases.' : 'Start drawing together.'}</p>
-
+                <div className='anim-left speed-slow delay-1'>
                 <label htmlFor="u">Username</label>
                 <input id="u" value={username} onChange={(e) => setUsername(e.target.value)} autoFocus required />
-
+                </div>
+                <div className='anim-left speed-slow delay-2'>
                 <label htmlFor="p">Password</label>
                 <input id="p" type="password" value={passwd} onChange={(e) => setPasswd(e.target.value)} required />
-
-                {err && <p className="error">{err}</p>}
-                <button className="btn" disabled={busy}>{busy ? 'Please wait...' : isLogin ? 'Log in' : 'Sign up'}</button>
+                </div>
+                {err && <p className="error anim-scale speed-slow">{err}</p>}
+                <button className="btn anim-scale speed-normal delay-3" disabled={busy}>{busy ? 'Please wait...' : isLogin ? 'Log in' : 'Sign up'}</button>
 
                 <p className="muted center-text">
                     {isLogin ? 'No account? ' : 'Already registered? '}
