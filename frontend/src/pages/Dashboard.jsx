@@ -76,7 +76,7 @@ export default function Dashboard() {
 
         <main className="dash" >
             <div className="grid2" >
-                <section className="card" >
+                <section className="card anim-left speed-fast delay-1" >
                     <h2 >New room</h2>
                     <p className="muted">Optional password for people who join by code.</p>
                     <label htmlFor="np" >Room password</label>
@@ -85,7 +85,7 @@ export default function Dashboard() {
                     <button className="btn" onClick={create} disabled={busy} >Create room</button>
                 </section>
 
-                <form className="card" onSubmit={join} >
+                <form className="card anim-right speed-fast delay-1" onSubmit={join} >
                     <h2 >Join a room</h2>
                     <p className="muted" >Enter the 6-character code you were given.</p>
                     <label htmlFor="rc" >Room code</label>
@@ -97,7 +97,7 @@ export default function Dashboard() {
                 </form>
             </div>
 
-            <div className="mid" >
+            <div className="mid anim-scale speed-fast delay-3" >
                 <h2>Your rooms</h2>
                 <span>
                     Created by you: <strong>{createdCount}</strong>
@@ -107,7 +107,7 @@ export default function Dashboard() {
             {rooms === null && <p className="muted" >Loading...</p>}
             {rooms?.length === 0 && <p className="muted" >You are not part of any rooms yet. Create one or join with a code.</p>}  
             
-            <div className="room-list">
+            <div className="room-list anim-right speed-slow delay-4">
                 {rooms?.map((r) => (
                     <div className="room-item" key={r.room_id}>
                         <div className='room-info'>
