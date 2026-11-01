@@ -7,11 +7,11 @@ Thinking Canvas is a real-time digital whiteboard where multiple people can draw
 Built using express websocket, postgresql and reactjs a web-app where you can create draw rooms, secure them with password and invite other people as collaborators or just as viewers. It supports multi-user synchronization, links ready to be copied and shared.
 
 ## Features
-Low latency sync and live cursor tracking.
-Rooms can be made with passwords or open collaborative boards with room ownership controls.
-Generate a secure view only link to share ideas with clients or viewers without signing in.
-Dark and light theme mode toggle.
-JWT based authentication using HTTP only cookies and hashed passwords.
+* Low latency sync and live cursor tracking.
+* Rooms can be made with passwords or open collaborative boards with room ownership controls.
+* Generate a secure view only link to share ideas with clients or viewers without signing in.
+* Dark and light theme mode toggle.
+* JWT based authentication using HTTP only cookies and hashed passwords.
 
 ## Screenshots
 
