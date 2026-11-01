@@ -15,9 +15,14 @@ Built using express websocket, postgresql and reactjs a web-app where you can cr
 
 ## Screenshots
 
+![Thinking Canvas - landing page](/assets/3.png)
+
 ![Thinking Canvas - drawing room](/assets/1.png)
 
 ![Thinking Canvas - dashboard](/assets/2.png)
+
+![Thinking Canvas - View Only](/assets/4.png)
+
 
 ## Dependencies
 
